@@ -35,19 +35,7 @@ on:
       ipaddr:
         description: "请设置软路由的管理地址,格式:192.168.x.1"
         required: true
-        default: "192.168.10.1"
-      rootfs_partsize:
-        description: '设置软件包大小 单位(MB)'
-        required: true
-        default: '256'
-        type: choice
-        options:
-          - '256'
-          - '512'
-          - '1024'
-          - '2048'
-          - '3072'
-          - '4096'         
+        default: "192.168.10.1"       
       include_docker:
         description: "是否集成 Docker 插件"
         required: true
@@ -192,9 +180,8 @@ jobs:
         working-directory: ./imagebuilder
         env:
           INCLUDE_DOCKER: ${{ inputs.include_docker }}
-          ROOTFS_PARTSIZE: ${{ inputs.rootfs_partsize }}
         run: |
-          bash ./build25.sh "${{ inputs.profile }}" "${{ inputs.rootfs_partsize }}"
+          bash ./build25.sh "${{ inputs.profile }}"
 
       - name: 📅 获取当前日期
         id: date
