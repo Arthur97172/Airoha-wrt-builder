@@ -16,13 +16,7 @@ on:
         required: false
         default: "snapshots"
         type: choice
-        options:
-          - '25.12.0'
-          - '25.12.1'
-          - '25.12.2'
-          - '25.12.3'
-          - '25.12.4'
-          - '25.12.5'
+        options:        
           - 'snapshots'
       profile:
         type: choice
@@ -64,8 +58,7 @@ on:
           - 'no'
 
 env:
-  # 判断：如果选了 immortalwrt，且版本不是 25.12.0和25.12.1（包含25.12.2~5），就强制降级为 25.12.1；否则保持用户选择
-  FINAL_LUCI_VER: ${{ (inputs.wrt_version == 'immortalwrt' && inputs.luci_version != '25.12.0' && inputs.luci_version != '25.12.1') && '25.12.1' || inputs.luci_version }}
+  FINAL_LUCI_VER: ${{ inputs.luci_version }}
   FINAL_WRT: ${{ inputs.wrt_version }}
   WRT_NAME: ${{ (inputs.wrt_version == 'openwrt') && 'OpenWrt' || 'ImmortalWrt' }}
   DOCKER: ${{ inputs.include_docker }}
@@ -109,7 +102,7 @@ jobs:
 
       - name: ⏬ 下载 Wrt ImageBuilder 25.12.x
         run: |
-          URL="https://downloads.${{ env.FINAL_WRT }}.org/releases/${{ env.FINAL_LUCI_VER }}/targets/qualcommax/ipq807x/${{ env.FINAL_WRT }}-imagebuilder-${{ env.FINAL_LUCI_VER }}-qualcommax-ipq807x.Linux-x86_64.tar.zst"
+          URL="https://downloads.${{ env.FINAL_WRT }}.org/${{ env.FINAL_LUCI_VER }}/targets/airoha/an7581/${{ env.FINAL_WRT }}-imagebuilder-${{ env.FINAL_LUCI_VER }}-airoha-an7581.Linux-x86_64.tar.zst"
           curl -Lf -o imagebuilder.tar.zst "$URL"
           tar --use-compress-program=unzstd -xvf imagebuilder.tar.zst
           mv -- ${{ env.FINAL_WRT }}-imagebuilder-* imagebuilder
@@ -134,7 +127,7 @@ jobs:
 
       - name: ⚙️ 动态获取 Kmod 哈希并更新配置
         run: |         
-          BASE_URL="https://downloads.${{ env.FINAL_WRT }}.org/releases/${{ env.FINAL_LUCI_VER }}/targets/qualcommax/ipq807x/kmods/"          
+          BASE_URL="https://downloads.${{ env.FINAL_WRT }}.org/${{ env.FINAL_LUCI_VER }}/targets/airoha/an7581/kmods/"          
           echo "正在从 $BASE_URL 获取最新的内核哈希..."
           KMOD_DIR=$(curl -sL $BASE_URL | grep -oE "[0-9.-]+-[a-f0-9]{32}" | head -n 1)
           if [ -n "$KMOD_DIR" ]; then
