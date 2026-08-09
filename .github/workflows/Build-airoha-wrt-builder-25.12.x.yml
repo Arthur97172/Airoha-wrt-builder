@@ -120,53 +120,54 @@ jobs:
 
           BASE_URL="https://downloads.${{ env.FINAL_WRT }}.org/${{ env.FINAL_LUCI_VER }}/targets/airoha/an7581/kmods"
 
-          # 1. 尝试直接从 ImageBuilder 自带的 target/profile 配置文件中精准提取依赖的内核哈希
-          # 这样可以 100% 保证和当前下载的 ImageBuilder 内核版本零误差
-          KERNEL_RAW=""
-          if [ -f "include/kernel.mk" ]; then
-            KERNEL_RAW=$(grep -oE 'LINUX_VERSION:=.*' include/kernel.mk || true)
-          fi
-          
-          # 2. 如果上面没找到，通过 make info 配合 grep 获取
-          if [ -z "$KERNEL_RAW" ]; then
+          # 根据不同分支/发行版采用不同的获取策略
+          if [ "${{ env.FINAL_WRT }}" == "immortalwrt" ]; then
+            echo "🔵 正在为 ImmortalWrt 获取内核哈希..."
+            
+            # ImmortalWrt 策略：直接使用稳妥的动态解析与远端检索兜底
             KERNEL_RAW=$(make info 2>/dev/null | grep -oE 'kernel=6\.[0-9]+\.[0-9]+~[a-f0-9]{32}-r[0-9]+' | head -n 1 || true)
-          fi
+            echo "🔍 本地解析到的内核字符串: $KERNEL_RAW"
 
-          # 3. 如果还是没有，直接从 apk 数据库或者已有的包索引里扒出本地依赖的 kernel hash
-          if [ -z "$KERNEL_RAW" ]; then
-            # 报错日志里明确给出了本地需要的是：1f70d6d135d30ef513a7f9bf11f7c3ec-r1
-            # 我们可以让脚本直接读取 apk 自身的安装断言
-            KERNEL_RAW=$(apk info -R kernel 2>/dev/null | grep -oE '6\.[0-9]+\.[0-9]+~[a-f0-9]{32}-r[0-9]+' || true)
-          fi
+            if [[ "$KERNEL_RAW" =~ kernel=([0-9]+\.[0-9]+\.[0-9]+)~([a-f0-9]{32})-r([0-9]+) ]]; then
+              K_VER="${BASH_REMATCH[1]}"
+              K_HASH="${BASH_REMATCH[2]}"
+              K_REV="${BASH_REMATCH[3]}"
+              KMOD_DIR="${K_VER}-${K_REV}-${K_HASH}"
+            fi
 
-          echo "🔍 捕获到的内核原始标识: $KERNEL_RAW"
+            # 如果动态抓取失败，自动去远端目录抓取最新的可用 kmods 目录（防止 404）
+            if [ -z "$KMOD_DIR" ] || ! curl -sI "${BASE_URL}/${KMOD_DIR}/packages.adb" | grep -q "200 OK"; then
+              echo "⚠️ 未能精准匹配或远端不存在，正在自动检索 ImmortalWrt 远端最新可用 kmods 目录..."
+              KMOD_DIR=$(curl -sL "${BASE_URL}/" | grep -oE '6\.[0-9]+\.[0-9]+-[0-9]+-[a-f0-9]{32}' | sort -V | tail -n 1)
+            fi
 
-          # 4. 终极兜底：如果前几步被干掉，直接从报错信息中暴露出来的已知本地特征正则匹配
-          if [[ ! "$KERNEL_RAW" =~ [a-f0-9]{32} ]]; then
-            # 如果是从报错中看出的本地内核: 6.18.41~1f70d6d135d30ef513a7f9bf11f7c3ec-r1
-            # 直接在本地缓存目录或 apk 索引里找符合 32 位 hex 的部分
-            LOCAL_HASH=$(find . -name "*.apk" -exec apk add --print-architectures 2>/dev/null \; || true)
-            # 稳妥起见，直接让脚本从 make info 的输出里提取所有字符
-            KERNEL_RAW=$(make info 2>/dev/null | tr '\n' ' ' | grep -oE 'kernel=[^ ]+' || true)
-          fi
-
-          # 核心解析正则
-          if [[ "$KERNEL_RAW" =~ ([0-9]+\.[0-9]+\.[0-9]+)~([a-f0-9]{32})-r([0-9]+) ]]; then
-            K_VER="${BASH_REMATCH[1]}"
-            K_HASH="${BASH_REMATCH[2]}"
-            K_REV="${BASH_REMATCH[3]}"
           else
-            # 如果动态解析失败，直接硬编码从当前错误日志提取到的正确本地哈希兜底（适用于OpenWrt当前版本）
-            echo "⚠️ 采用硬编码捕获本地固件编译内核哈希..."
-            K_VER="6.18.41"
-            K_HASH="1f70d6d135d30ef513a7f9bf11f7c3ec"
-            K_REV="1"
+            echo "🟢 正在为 OpenWrt 获取内核哈希..."
+            
+            # OpenWrt 策略：你原本的多重提取加硬编码兜底
+            KERNEL_RAW=""
+            if [ -f "include/kernel.mk" ]; then
+              KERNEL_RAW=$(grep -oE 'LINUX_VERSION:=.*' include/kernel.mk || true)
+            fi
+            
+            if [ -z "$KERNEL_RAW" ]; then
+              KERNEL_RAW=$(make info 2>/dev/null | grep -oE 'kernel=6\.[0-9]+\.[0-9]+~[a-f0-9]{32}-r[0-9]+' | head -n 1 || true)
+            fi
+
+            if [[ "$KERNEL_RAW" =~ ([0-9]+\.[0-9]+\.[0-9]+)~([a-f0-9]{32})-r([0-9]+) ]]; then
+              K_VER="${BASH_REMATCH[1]}"
+              K_HASH="${BASH_REMATCH[2]}"
+              K_REV="${BASH_REMATCH[3]}"
+            else
+              echo "⚠️ 采用硬编码捕获本地固件编译内核哈希..."
+              K_VER="6.18.41"
+              K_HASH="1f70d6d135d30ef513a7f9bf11f7c3ec"
+              K_REV="1"
+            fi
+            KMOD_DIR="${K_VER}-${K_REV}-${K_HASH}"
           fi
 
-          # 拼出远端标准的 kmods 目录名
-          KMOD_DIR="${K_VER}-${K_REV}-${K_HASH}"
-          echo "✅ 最终锁定的 KMOD 目录: $KMOD_DIR"
-
+          echo "✅ 最终确定的 kmods 目录: $KMOD_DIR"
           FULL_KMOD_URL="${BASE_URL}/${KMOD_DIR}/packages.adb"
 
           # 替换占位符
