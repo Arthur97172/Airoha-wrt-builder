@@ -128,29 +128,44 @@ jobs:
       - name: ⚙️ 动态获取 Kmod 哈希并更新配置
         run: |
           set -e
-          BASE_URL="https://downloads.${{ env.FINAL_WRT }}.org/${{ env.FINAL_LUCI_VER }}/targets/airoha/an7581/kmods/"
-          echo "正在从 $BASE_URL 获取最新的内核哈希..."
+          cd imagebuilder
 
-          # 强制只取 6.18 系列，并选最新的一个
-          KMOD_DIR=$(curl -sL "$BASE_URL" | \
-            grep -oE '6\.18\.[0-9]+-[0-9]+-[a-f0-9]{32}' | \
-            sort -V | tail -n 1)
-
-          if [ -z "$KMOD_DIR" ]; then
-            echo "❌ 没有找到任何 6.18 的 kmods 目录"
-            echo "当前目录列表："
-            curl -sL "$BASE_URL" | head -80
-            exit 1
+          # 1. 尝试从本地 targetinfo / Makefile / package 列表中提取内核版本与哈希
+          # 在 apk 体系下，直接从内置的 kernel 包名或 targetinfo 中提取
+          KERNEL_VER=$(grep -m 1 -oE 'kernel=6\.[0-9]+\.[0-9]+~[a-f0-9]{32}-r[0-9]+' .targetinfo 2>/dev/null || true)
+          
+          if [ -z "$KERNEL_VER" ]; then
+            # 备用方案：通过 grep Makefile 或特定 target 提取
+            KERNEL_VER=$(grep -m 1 -oE '6\.[0-9]+\.[0-9]+-[0-9]+-[a-f0-9]{32}' include/kernel*.mk Makefile 2>/dev/null || true)
           fi
 
-          FULL_KMOD_URL="${BASE_URL}${KMOD_DIR}/packages.adb"
-          echo "✅ 成功匹配 kmods 路径: $FULL_KMOD_URL"
+          # 2. 如果找到了形如 6.18.41~1f70d6d135d30ef513a7f9bf11f7c3ec-r1 的定义
+          # 转换成 kmods 目录格式：6.18.41-1-1f70d6d135d30ef513a7f9bf11f7c3ec
+          if [[ "$KERNEL_VER" =~ ([0-9]+\.[0-9]+\.[0-9]+)~([a-f0-9]{32})-r([0-9]+) ]]; then
+            VER="${BASH_REMATCH[1]}"
+            HASH="${BASH_REMATCH[2]}"
+            REV="${BASH_REMATCH[3]}"
+            KMOD_DIR="${VER}-${REV}-${HASH}"
+          fi
 
-          sed -i "s|VERSION_PLACEHOLDER|${{ env.FINAL_LUCI_VER }}|g" imagebuilder/repositories
-          sed -i "s|KMOD_PLACEHOLDER|${FULL_KMOD_URL}|g" imagebuilder/repositories
+          BASE_URL="https://downloads.${{ env.FINAL_WRT }}.org/${{ env.FINAL_LUCI_VER }}/targets/airoha/an7581/kmods"
+
+          if [ -z "$KMOD_DIR" ]; then
+            echo "⚠️ 本地未提取到精确哈希，回退为检索匹配当前内核版本的目录..."
+            # 从本地读取具体内核主版本号 (如 6.18.41)
+            LOCAL_KVER=$(grep -m 1 -oE '6\.18\.[0-9]+' .targetinfo Makefile 2>/dev/null | head -n 1 || echo "6.18")
+            # 尝试在远程查找包含该具体版本的所有目录，避免取到更新的次版本
+            KMOD_DIR=$(curl -sL "$BASE_URL/" | grep -oE "${LOCAL_KVER//./\\.}-[0-9]+-[a-f0-9]{32}" | sort -V | tail -n 1)
+          fi
+
+          echo "✅ 本地 ImageBuilder 匹配到的 kmods 目录: $KMOD_DIR"
+          FULL_KMOD_URL="${BASE_URL}/${KMOD_DIR}/packages.adb"
+
+          sed -i "s|VERSION_PLACEHOLDER|${{ env.FINAL_LUCI_VER }}|g" repositories
+          sed -i "s|KMOD_PLACEHOLDER|${FULL_KMOD_URL}|g" repositories
 
           echo "最终 repositories 内容："
-          cat imagebuilder/repositories
+          cat repositories
 
       - name: 🧱 构建 WRT 25.12.x 固件
         working-directory: ./imagebuilder
