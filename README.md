@@ -29,7 +29,7 @@
 ## 😊 支持设备 [![](https://img.shields.io/badge/-支持设备-FFFFFF.svg)](#-支持设备-)
 | 品牌     | 设备型号 |
 |----------|------|
-| Airoha    | airoha_an7581-evb, airoha_an7581-evb-emmc-eagle,  airoha_an7581-evb-emmc-kite,  |
+| Airoha    | airoha_an7581-evb, airoha_an7581-evb-emmc-eagle,  airoha_an7581-evb-emmc-kite |
 | Gemtek   | gemtek_w1700k-ubi |
 | Nokia   | nokia_valyrian, nokia_xg-040g-md, nokia_xg-040g-md-ubi |
 
