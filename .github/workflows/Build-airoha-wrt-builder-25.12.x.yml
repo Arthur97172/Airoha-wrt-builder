@@ -126,19 +126,30 @@ jobs:
           echo "✅ 文件准备完成"
 
       - name: ⚙️ 动态获取 Kmod 哈希并更新配置
-        run: |         
-          BASE_URL="https://downloads.${{ env.FINAL_WRT }}.org/${{ env.FINAL_LUCI_VER }}/targets/airoha/an7581/kmods/"          
+        run: |
+          set -e
+          BASE_URL="https://downloads.${{ env.FINAL_WRT }}.org/${{ env.FINAL_LUCI_VER }}/targets/airoha/an7581/kmods/"
           echo "正在从 $BASE_URL 获取最新的内核哈希..."
-          KMOD_DIR=$(curl -sL $BASE_URL | grep -oE "[0-9.-]+-[a-f0-9]{32}" | head -n 1)
-          if [ -n "$KMOD_DIR" ]; then
-            FULL_KMOD_URL="${BASE_URL}${KMOD_DIR}/packages.adb"
-            echo "✅ 成功匹配 kmods 路径: $FULL_KMOD_URL"
-            sed -i "s|VERSION_PLACEHOLDER|${{ env.FINAL_LUCI_VER }}|g" imagebuilder/repositories
-            sed -i "s|KMOD_PLACEHOLDER|${FULL_KMOD_URL}|g" imagebuilder/repositories
-          else
-            echo "❌ 无法获取 Kmod 哈希"
+
+          # 强制只取 6.18 系列，并选最新的一个
+          KMOD_DIR=$(curl -sL "$BASE_URL" | \
+            grep -oE '6\.18\.[0-9]+-[0-9]+-[a-f0-9]{32}' | \
+            sort -V | tail -n 1)
+
+          if [ -z "$KMOD_DIR" ]; then
+            echo "❌ 没有找到任何 6.18 的 kmods 目录"
+            echo "当前目录列表："
+            curl -sL "$BASE_URL" | head -80
             exit 1
           fi
+
+          FULL_KMOD_URL="${BASE_URL}${KMOD_DIR}/packages.adb"
+          echo "✅ 成功匹配 kmods 路径: $FULL_KMOD_URL"
+
+          sed -i "s|VERSION_PLACEHOLDER|${{ env.FINAL_LUCI_VER }}|g" imagebuilder/repositories
+          sed -i "s|KMOD_PLACEHOLDER|${FULL_KMOD_URL}|g" imagebuilder/repositories
+
+          echo "最终 repositories 内容："
           cat imagebuilder/repositories
 
       - name: 🧱 构建 WRT 25.12.x 固件
