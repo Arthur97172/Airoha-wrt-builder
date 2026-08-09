@@ -3,12 +3,12 @@
   <img src="files/screenshot/001.png" style="max-width: 100%; height: auto;" />
   <img src="./files/screenshot/banner.svg" style="max-width: 100%; height: auto;" />
 </p>
-  <h1>基于ImmortalWrt and Openwrt Qualcommax-ipq807x</h1>
+  <h1>基于ImmortalWrt and Openwrt Airoha-an7581</h1>
 
-  <img src="https://img.shields.io/github/downloads/Arthur97172/Qualcommax-wrt-builder/total.svg?style=for-the-badge&color=32C955"/>
-  <img src="https://img.shields.io/github/stars/Arthur97172/Qualcommax-wrt-builder.svg?style=for-the-badge&color=orange"/>
-  <img src="https://img.shields.io/github/forks/Arthur97172/IQualcommax-wrt-builder.svg?style=for-the-badge&color=ff69b4"/>
-  <img src="https://img.shields.io/github/license/Arthur97172/Qualcommax-wrt-builder.svg?style=for-the-badge&color=blueviolet"/>
+  <img src="https://img.shields.io/github/downloads/Arthur97172/Airoha-wrt-builder/total.svg?style=for-the-badge&color=32C955"/>
+  <img src="https://img.shields.io/github/stars/Arthur97172/Airoha-wrt-builder.svg?style=for-the-badge&color=orange"/>
+  <img src="https://img.shields.io/github/forks/Arthur97172/Airoha-wrt-builder.svg?style=for-the-badge&color=ff69b4"/>
+  <img src="https://img.shields.io/github/license/Arthur97172/Airoha-wrt-builder.svg?style=for-the-badge&color=blueviolet"/>
 
   [![](https://img.shields.io/badge/-目录:-696969.svg)](#readme)
   [![](https://img.shields.io/badge/-项目介绍-FFFFFF.svg)](#-项目介绍-)
@@ -29,27 +29,9 @@
 ## 😊 支持设备 [![](https://img.shields.io/badge/-支持设备-FFFFFF.svg)](#-支持设备-)
 | 品牌     | 设备型号 |
 |----------|------|
-| Aliyun    | aliyun_ap8220 |
-| Arcadyan   | arcadyan_aw1000 |
-| Asus   | asus_rt-ax89x |
-| Buffalo   | buffalo_wxr-5950ax12 |
-| Cmcc   | cmcc_rm2-6 |
-| Compex   | compex_wpq873 |
-| Dynalink_dl   | dynalink_dl-wrx36 |
-| Edgecore    | edgecore_eap102 |
-| Bedimax   | bedimax_cax1800 |
-| Linksys   | linksys_homewrk, linksys_mx4200v1, linksys_mx4200v2, linksys_mx4300, linksys_mx5300, linksys_mx8300 |
-| Netgear    | netgear_rax120v2, netgear_sxr80, netgear_wax218, netgear_wax620, netgear_wax630 |
-| Prpl   | prpl_haze |
-| Qnap   | qnap_301w |
-| Redmi   | redmi_ax6 |
-| Spectrum   | spectrum_sax1v1k |
-| Tplink   | tplink_deco-x80-5g, tplink_eap620hd-v1, tplink_eap660hd-v1 |
-| Xiaomi   | xiaomi_ax3600, xiaomi_ax9000 |
-| Yuncore   | yuncore_ax880 |
-| Zbtlink   | zbtlink_zbt-z800ax |
-| Zte   | zte_mf269  |
-| Zyxel   | zyxel_nbg7815, zyxel_nwa210ax |
+| Airoha    | airoha_an7581-evb, airoha_an7581-evb-emmc-eagle,  airoha_an7581-evb-emmc-kite,  |
+| Gemtek   | gemtek_w1700k-ubi |
+| Nokia   | nokia_valyrian, nokia_xg-040g-md, nokia_xg-040g-md-ubi |
 
 ## 😅 第三方插件 [![](https://img.shields.io/badge/-第三方插件-FFFFFF.svg)](#-第三方插件-)
 <div align="left">
