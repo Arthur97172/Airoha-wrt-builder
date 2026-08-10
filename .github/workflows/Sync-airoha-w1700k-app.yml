@@ -1,5 +1,4 @@
 name: Sync APP Files
-run-name: Sync W1700K APP Files
 
 on:
   workflow_dispatch:
