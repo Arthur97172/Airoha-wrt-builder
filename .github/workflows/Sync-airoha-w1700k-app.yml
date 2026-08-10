@@ -1,4 +1,5 @@
-name: Sync APP Files
+name: Sync W1700K APP Files
+run-name: Sync W1700K APP Files
 
 on:
   workflow_dispatch:
@@ -33,7 +34,7 @@ jobs:
           echo "=== 开始获取 Arthur97172/Gemtek-XR1710G-wrt-builder 最新 Release 中的 .apk 文件 ==="
           mkdir -p apps
 
-          # 1. 先清理本地 apps 目录下旧的 apk 文件，确保与最新 Release 保持同步
+          # 1. 清理本地 apps 目录下旧的 apk 文件
           rm -f apps/*.apk
 
           # 2. 使用 GitHub CLI 自动下载最新 Release 中所有的 *.apk 文件
@@ -81,6 +82,6 @@ jobs:
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
           git add apps/
-          git commit -m "sync: fetch latest release apk files from Arthur97172/Gemtek-XR1710G-wrt-builder ($(date +%Y%m%d))" || echo "无需提交"
+          git commit -m "sync: fetch latest release apk files for W1700K ($(date +%Y%m%d))" || echo "无需提交"
           git push || echo "推送失败"
           echo "✅ 同步完成"
