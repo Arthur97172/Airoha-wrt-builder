@@ -85,10 +85,12 @@ if [ "$THIRD_PARTY_OK" = "1" ]; then
     fi
 
     # 2. 【新增】直接把本地 apps 目录下的 APK 复制到第三方合并目录
-    if [ -d "apps" ]; then
-        cp -f apps/*.apk apk-merged/ 2>/dev/null || true
-    elif [ -d "../apps" ]; then
-        cp -f ../apps/*.apk apk-merged/ 2>/dev/null || true
+    if [ "$PROFILE" = "gemtek_w1700k-ubi" ]; then
+        if [ -d "apps" ]; then
+            cp -f apps/*.apk apk-merged/ 2>/dev/null || true
+        elif [ -d "../apps" ]; then
+            cp -f ../apps/*.apk apk-merged/ 2>/dev/null || true
+        fi
     fi
     
     if [ -d apk-merged ] && [ -n "$(ls apk-merged/*.apk 2>/dev/null)" ]; then
