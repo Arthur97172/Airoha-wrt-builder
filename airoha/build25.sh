@@ -80,6 +80,13 @@ if [ "$THIRD_PARTY_OK" = "1" ]; then
     if [ -d /tmp/store-repo/apk/aarch64_cortex-a53 ]; then
         find /tmp/store-repo/apk/aarch64_cortex-a53 -name '*.apk' -exec cp -t apk-merged {} + 2>/dev/null || true
     fi
+
+    # 2. 【新增】直接把本地 apps 目录下的 APK 复制到第三方合并目录
+    if [ -d "apps" ]; then
+        cp -f apps/*.apk apk-merged/ 2>/dev/null || true
+    elif [ -d "../apps" ]; then
+        cp -f ../apps/*.apk apk-merged/ 2>/dev/null || true
+    fi
     
     if [ -d apk-merged ] && [ -n "$(ls apk-merged/*.apk 2>/dev/null)" ]; then
         cp apk-merged/*.apk thirdparty/ 2>/dev/null
