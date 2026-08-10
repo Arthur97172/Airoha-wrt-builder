@@ -46,6 +46,12 @@ PACKAGES="$PACKAGES luci-app-upnp luci-i18n-upnp-zh-cn"
 PACKAGES="$PACKAGES luci-app-wol luci-i18n-wol-zh-cn"
 PACKAGES="$PACKAGES luci-app-package-manager luci-i18n-package-manager-zh-cn"
 
+# [本地apps插件]
+PACKAGES="$PACKAGES luci-app-airoha-flowsense"
+PACKAGES="$PACKAGES luci-app-airoha-npu luci-i18n-airoha-npu-zh-cn"
+PACKAGES="$PACKAGES luci-app-mlo luci-i18n-mlo-zh-cn"
+PACKAGES="$PACKAGES luci-app-w1700k-fancontrol luci-i18n-w1700k-fancontrol-zh-cn"
+
 # ============================================
 # 步骤2: 处理第三方插件(最佳努力,失败不阻断构建)
 # ============================================
