@@ -5,12 +5,10 @@
 # --- 接收外部参数 ---
 # 与 build25.sh 约定一致:$1=PROFILE, $2=ROOTFS_PARTSIZE
 PROFILE=${1:-"gemtek_w1700k-ubi"}
-WRT_VERSION=${1:-"immortalwrt"}
 INCLUDE_DOCKER=${INCLUDE_DOCKER:-"no"}
 
 echo "Target Profile: $PROFILE"
 echo "Include Docker: $INCLUDE_DOCKER"
-echo "wrt version: $WRT_VERSION"
 
 # ============================================
 # 步骤1: 加载第三方插件配置
