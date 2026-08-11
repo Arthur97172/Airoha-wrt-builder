@@ -1,4 +1,4 @@
-name: Build LuCI Airoha_an7581
+name: 📦 Build LuCI Airoha_an7581
 
 on:
   workflow_dispatch:
