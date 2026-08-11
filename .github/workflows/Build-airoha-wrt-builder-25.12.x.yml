@@ -95,7 +95,7 @@ jobs:
           tar --use-compress-program=unzstd -xvf imagebuilder.tar.zst
           mv -- ${{ env.FINAL_WRT }}-imagebuilder-* imagebuilder
 
-      - name: 🔄 复制必备文件
+      - name: 🔄 复制${{ inputs.wrt_version }}必备文件
         run: |   
           cp airoha/build25.sh imagebuilder/
           
@@ -177,7 +177,7 @@ jobs:
           echo "最终 repositories 内容："
           cat repositories
 
-      - name: 🧱 构建 WRT 25.12.x 固件
+      - name: 🧱 构建 ${{ inputs.wrt_version }} 25.12.x 固件
         working-directory: ./imagebuilder
         env:
           INCLUDE_DOCKER: ${{ inputs.include_docker }}
@@ -200,7 +200,7 @@ jobs:
           🐳 Docker状态： ${{ inputs.include_docker == 'yes' && '已集成' || '未集成' }}
           EOF
 
-      - name: 🚀 上传到 Release
+      - name: 🚀 上传到 ${{ inputs.wrt_version }} Release
         uses: softprops/action-gh-release@v2.2.1
         with:
           tag_name: ${{ steps.date.outputs.date }}-${{ env.FINAL_WRT }}-${{ env.FINAL_LUCI_VER }}-airoha-an7581-RELEASE-Docker-${{ inputs.include_docker }}
