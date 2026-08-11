@@ -1,5 +1,5 @@
-name: 📦  Sync W1700K APP Files
-run-name: 📦  Sync W1700K APP Files
+name: 📦  Sync LuCI APP Files
+run-name: 📦  Sync LuCI APP Files
 
 on:
   workflow_dispatch:
