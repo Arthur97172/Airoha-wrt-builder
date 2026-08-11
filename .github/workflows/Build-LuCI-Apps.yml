@@ -1,4 +1,4 @@
-name: 📦 Build LuCI Airoha_an7581
+name: 📦 Build LuCI Apps
 
 on:
   workflow_dispatch:
@@ -126,7 +126,7 @@ jobs:
 
           find sdk/bin -name "*.apk" | while read -r f; do
             case "$(basename "$f")" in
-              *airoha*|*mlo*|*w1700k*)
+              *airoha-flowsense*|*airoha-npu*|*mlo*|*w1700k-fancontrol*|*airoha-fancontrol*)
                 cp -v "$f" output/
                 ;;
             esac
