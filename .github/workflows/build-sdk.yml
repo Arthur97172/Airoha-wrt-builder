@@ -154,8 +154,8 @@ jobs:
           set -e
 
           DATE=$(date +%Y.%m.%d)
-          TAG="immortalwrt_${DATE}"
-          RELEASE_NAME="ImmortalWrt ${DATE}"
+          TAG="Apps"
+          RELEASE_NAME="Apps ${DATE}"
 
           echo "Release 标签: $TAG"
           echo "Release 名称: $RELEASE_NAME"
