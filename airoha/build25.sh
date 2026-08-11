@@ -50,10 +50,10 @@ PACKAGES="$PACKAGES luci-app-package-manager luci-i18n-package-manager-zh-cn"
 # [gemtek_w1700k-ubi插件]
 if [ "$PROFILE" = "gemtek_w1700k-ubi" ]; then
     echo "🐳 Install gemtek_w1700k-ubi Luci"
-    PACKAGES="$PACKAGES luci-app-airoha-flowsense"
+    PACKAGES="$PACKAGES luci-app-airoha-flowsense luci-i18n-airoha-flowsense-zh-cn"
     PACKAGES="$PACKAGES luci-app-airoha-npu luci-i18n-airoha-npu-zh-cn"
     PACKAGES="$PACKAGES luci-app-mlo luci-i18n-mlo-zh-cn"
-    PACKAGES="$PACKAGES luci-app-w1700k-fancontrol luci-i18n-w1700k-fancontrol-zh-cn"
+    PACKAGES="$PACKAGES luci-app-airoha-fancontrol luci-i18n-airoha-fancontrol-zh-cn"
 fi
 
 # ============================================
