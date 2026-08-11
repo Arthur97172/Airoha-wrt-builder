@@ -56,6 +56,8 @@ if [ "$PROFILE" = "gemtek_w1700k-ubi" ]; then
     PACKAGES="$PACKAGES luci-app-airoha-fancontrol luci-i18n-airoha-fancontrol-zh-cn"
 fi
 
+#PACKAGES="$PACKAGES luci-app-airoha-fancontrol luci-i18n-airoha-fancontrol-zh-cn"
+#PACKAGES="$PACKAGES luci-app-w1700k-fancontrol luci-i18n-w1700k-fancontrol-zh-cn"
 # ============================================
 # 步骤2: 处理第三方插件(最佳努力,失败不阻断构建)
 # ============================================
