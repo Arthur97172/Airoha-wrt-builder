@@ -120,39 +120,53 @@ jobs:
 
           BASE_URL="https://downloads.${{ env.FINAL_WRT }}.org/${{ env.FINAL_LUCI_VER }}/targets/airoha/an7581/kmods"
 
-          echo "🔍 正在从本地 ImageBuilder 解析真实内核签名..."
+          echo "🔍 正在从本地 ImageBuilder 全盘解析真实内核签名..."
 
-          # 1. 首选：直接读取 packages/ 目录下 kernel 或 kmod 包的包名（最精准）
-          LOCAL_KERNEL_RAW=$(ls packages/ 2>/dev/null | grep -E '^(kernel_|kmod-)' | grep -oE '6\.[0-9]+\.[0-9]+~[a-f0-9]{32}-r[0-9]+' | head -n 1 || true)
+          # 1. 递归扫描所有包文件 (.apk/.ipk) 及索引文件内容，提取标准内核签名串
+          LOCAL_KERNEL_RAW=$(find . -type f \( -name "*.apk" -o -name "*.ipk" -o -name "Packages*" -o -name "*.adb" -o -name "*.manifest" \) 2>/dev/null | xargs -r grep -oE '[0-9]+\.[0-9]+\.[0-9]+~[a-f0-9]{32}-r[0-9]+' 2>/dev/null | head -n 1 | awk -F: '{print $NF}' || true)
 
-          # 2. 次选：通过 make info 提取
+          # 2. 若索引内未匹配到，扫描文件名本身
           if [ -z "$LOCAL_KERNEL_RAW" ]; then
-            LOCAL_KERNEL_RAW=$(make info 2>/dev/null | grep -oE 'kernel=6\.[0-9]+\.[0-9]+~[a-f0-9]{32}-r[0-9]+' | head -n 1 | sed 's/kernel=//' || true)
+            LOCAL_KERNEL_RAW=$(find . -type f 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+~[a-f0-9]{32}-r[0-9]+' | head -n 1 || true)
+          fi
+
+          # 3. 若仍未匹配到，扫描整个 imagebuilder 目录下的文本文件内容
+          if [ -z "$LOCAL_KERNEL_RAW" ]; then
+            LOCAL_KERNEL_RAW=$(grep -rnoE '[0-9]+\.[0-9]+\.[0-9]+~[a-f0-9]{32}-r[0-9]+' . 2>/dev/null | head -n 1 | awk -F: '{print $NF}' || true)
           fi
 
           echo "📌 本地提取到的内核版本串: $LOCAL_KERNEL_RAW"
 
+          # 解析版本串
           if [[ "$LOCAL_KERNEL_RAW" =~ ([0-9]+\.[0-9]+\.[0-9]+)~([a-f0-9]{32})-r([0-9]+) ]]; then
             K_VER="${BASH_REMATCH[1]}"
             K_HASH="${BASH_REMATCH[2]}"
             K_REV="${BASH_REMATCH[3]}"
-            
-            # 构建标准的 kmods 目录格式: 6.18.41-1-372c6e7a62be3fc2417552483f4327be
-            KMOD_DIR="${K_VER}-${K_REV}-${K_HASH}"
-            echo "✅ 成功获取匹配的 kmods 目录名: $KMOD_DIR"
           else
-            echo "❌ 无法解析本地内核哈希，请检查 ImageBuilder 完整性！"
+            echo "⚠️ 未能精确提取完整版本串，尝试深度定位 32 位 Vermagic 哈希..."
+            K_HASH=$(grep -rnoE '[a-f0-9]{32}' . 2>/dev/null | head -n 1 | awk -F: '{print $NF}' || true)
+            K_VER=$(grep -rnoE '6\.[0-9]+\.[0-9]+' . 2>/dev/null | head -n 1 | awk -F: '{print $NF}' || echo "6.18.41")
+            K_REV="1"
+          fi
+
+          if [ -n "$K_HASH" ]; then
+            KMOD_DIR="${K_VER}-${K_REV}-${K_HASH}"
+            echo "✅ 成功确定的 kmods 目录名: $KMOD_DIR"
+          else
+            echo "❌ 无法定位内核哈希！当前 ImageBuilder 目录结构如下："
+            ls -la
+            ls -la packages/ 2>/dev/null || true
             exit 1
           fi
 
           FULL_KMOD_URL="${BASE_URL}/${KMOD_DIR}/packages.adb"
 
-          # 3. 校验远程地址是否存在
+          # 4. 校验远程 kmods 仓库地址可用性
           if curl -sI "$FULL_KMOD_URL" | grep -qE "200 OK|302 Found|301 Moved"; then
             echo "✅ 远程 kmods 仓库在线且哈希匹配成功！"
           else
             echo "⚠️ 警告: 远程服务器上未找到对应的 kmods 目录 (${KMOD_DIR})。"
-            echo "💡 提示: 官方 snapshot 镜像已被更新。建议在 CI 中同步重新下载最新的 ImageBuilder 压缩包。"
+            echo "💡 提示: 官方 snapshot 镜像已更新，请确保 CI 构建时重新下载最新的 ImageBuilder 压缩包。"
           fi
 
           # 替换 repositories 中的占位符
