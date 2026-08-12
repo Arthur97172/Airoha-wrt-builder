@@ -120,57 +120,42 @@ jobs:
 
           BASE_URL="https://downloads.${{ env.FINAL_WRT }}.org/${{ env.FINAL_LUCI_VER }}/targets/airoha/an7581/kmods"
 
-          # 根据不同分支/发行版采用不同的获取策略
-          if [ "${{ env.FINAL_WRT }}" == "immortalwrt" ]; then
-            echo "🔵 正在为 ImmortalWrt 获取内核哈希..."
-            
-            # ImmortalWrt 策略：直接使用稳妥的动态解析与远端检索兜底
-            KERNEL_RAW=$(make info 2>/dev/null | grep -oE 'kernel=6\.[0-9]+\.[0-9]+~[a-f0-9]{32}-r[0-9]+' | head -n 1 || true)
-            echo "🔍 本地解析到的内核字符串: $KERNEL_RAW"
+          echo "🔍 正在从本地 ImageBuilder 解析真实内核签名..."
 
-            if [[ "$KERNEL_RAW" =~ kernel=([0-9]+\.[0-9]+\.[0-9]+)~([a-f0-9]{32})-r([0-9]+) ]]; then
-              K_VER="${BASH_REMATCH[1]}"
-              K_HASH="${BASH_REMATCH[2]}"
-              K_REV="${BASH_REMATCH[3]}"
-              KMOD_DIR="${K_VER}-${K_REV}-${K_HASH}"
-            fi
+          # 1. 首选：直接读取 packages/ 目录下 kernel 或 kmod 包的包名（最精准）
+          LOCAL_KERNEL_RAW=$(ls packages/ 2>/dev/null | grep -E '^(kernel_|kmod-)' | grep -oE '6\.[0-9]+\.[0-9]+~[a-f0-9]{32}-r[0-9]+' | head -n 1 || true)
 
-            # 如果动态抓取失败，自动去远端目录抓取最新的可用 kmods 目录（防止 404）
-            if [ -z "$KMOD_DIR" ] || ! curl -sI "${BASE_URL}/${KMOD_DIR}/packages.adb" | grep -q "200 OK"; then
-              echo "⚠️ 未能精准匹配或远端不存在，正在自动检索 ImmortalWrt 远端最新可用 kmods 目录..."
-              KMOD_DIR=$(curl -sL "${BASE_URL}/" | grep -oE '6\.[0-9]+\.[0-9]+-[0-9]+-[a-f0-9]{32}' | sort -V | tail -n 1)
-            fi
-
-          else
-            echo "🟢 正在为 OpenWrt 获取内核哈希..."
-            
-            # OpenWrt 策略：你原本的多重提取加硬编码兜底
-            KERNEL_RAW=""
-            if [ -f "include/kernel.mk" ]; then
-              KERNEL_RAW=$(grep -oE 'LINUX_VERSION:=.*' include/kernel.mk || true)
-            fi
-            
-            if [ -z "$KERNEL_RAW" ]; then
-              KERNEL_RAW=$(make info 2>/dev/null | grep -oE 'kernel=6\.[0-9]+\.[0-9]+~[a-f0-9]{32}-r[0-9]+' | head -n 1 || true)
-            fi
-
-            if [[ "$KERNEL_RAW" =~ ([0-9]+\.[0-9]+\.[0-9]+)~([a-f0-9]{32})-r([0-9]+) ]]; then
-              K_VER="${BASH_REMATCH[1]}"
-              K_HASH="${BASH_REMATCH[2]}"
-              K_REV="${BASH_REMATCH[3]}"
-            else
-              echo "⚠️ 采用硬编码捕获本地固件编译内核哈希..."
-              K_VER="6.18.41"
-              K_HASH="1f70d6d135d30ef513a7f9bf11f7c3ec"
-              K_REV="1"
-            fi
-            KMOD_DIR="${K_VER}-${K_REV}-${K_HASH}"
+          # 2. 次选：通过 make info 提取
+          if [ -z "$LOCAL_KERNEL_RAW" ]; then
+            LOCAL_KERNEL_RAW=$(make info 2>/dev/null | grep -oE 'kernel=6\.[0-9]+\.[0-9]+~[a-f0-9]{32}-r[0-9]+' | head -n 1 | sed 's/kernel=//' || true)
           fi
 
-          echo "✅ 最终确定的 kmods 目录: $KMOD_DIR"
+          echo "📌 本地提取到的内核版本串: $LOCAL_KERNEL_RAW"
+
+          if [[ "$LOCAL_KERNEL_RAW" =~ ([0-9]+\.[0-9]+\.[0-9]+)~([a-f0-9]{32})-r([0-9]+) ]]; then
+            K_VER="${BASH_REMATCH[1]}"
+            K_HASH="${BASH_REMATCH[2]}"
+            K_REV="${BASH_REMATCH[3]}"
+            
+            # 构建标准的 kmods 目录格式: 6.18.41-1-372c6e7a62be3fc2417552483f4327be
+            KMOD_DIR="${K_VER}-${K_REV}-${K_HASH}"
+            echo "✅ 成功获取匹配的 kmods 目录名: $KMOD_DIR"
+          else
+            echo "❌ 无法解析本地内核哈希，请检查 ImageBuilder 完整性！"
+            exit 1
+          fi
+
           FULL_KMOD_URL="${BASE_URL}/${KMOD_DIR}/packages.adb"
 
-          # 替换占位符
+          # 3. 校验远程地址是否存在
+          if curl -sI "$FULL_KMOD_URL" | grep -qE "200 OK|302 Found|301 Moved"; then
+            echo "✅ 远程 kmods 仓库在线且哈希匹配成功！"
+          else
+            echo "⚠️ 警告: 远程服务器上未找到对应的 kmods 目录 (${KMOD_DIR})。"
+            echo "💡 提示: 官方 snapshot 镜像已被更新。建议在 CI 中同步重新下载最新的 ImageBuilder 压缩包。"
+          fi
+
+          # 替换 repositories 中的占位符
           sed -i "s|VERSION_PLACEHOLDER|${{ env.FINAL_LUCI_VER }}|g" repositories
           sed -i "s|KMOD_PLACEHOLDER|${FULL_KMOD_URL}|g" repositories
 
