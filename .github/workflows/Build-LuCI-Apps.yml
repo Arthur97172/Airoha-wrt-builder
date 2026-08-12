@@ -25,6 +25,7 @@ jobs:
         run: |
           set -e
           SDK_URL="https://downloads.immortalwrt.org/snapshots/targets/airoha/an7581/immortalwrt-sdk-airoha-an7581_gcc-14.4.0_musl.Linux-x86_64.tar.zst"
+          #SDK_URL="https://downloads.openwrt.org/snapshots/targets/airoha/an7581/openwrt-sdk-airoha-an7581_gcc-14.4.0_musl.Linux-x86_64.tar.zst"
           
           echo ">>> 下载 ImmortalWrt SDK: $SDK_URL"
           wget -q --show-progress "$SDK_URL" -O sdk.tar.zst
