@@ -103,6 +103,7 @@ jobs:
           echo "CONFIG_PACKAGE_luci-app-airoha-fancontrol=m" >> .config
           echo "CONFIG_PACKAGE_luci-app-mlo=m" >> .config
           echo "CONFIG_PACKAGE_luci-app-w1700k-fancontrol=m" >> .config
+          echo "CONFIG_PACKAGE_luci-app-cpufreq=m" >> .config
 
           make defconfig
           echo "配置完成"
@@ -112,7 +113,7 @@ jobs:
           set -e
           cd sdk
 
-          PLUGINS="luci-app-airoha-flowsense luci-app-airoha-npu luci-app-airoha-fancontrol luci-app-mlo luci-app-w1700k-fancontrol"
+          PLUGINS="luci-app-airoha-flowsense luci-app-airoha-npu luci-app-airoha-fancontrol luci-app-mlo luci-app-w1700k-fancontrol luci-app-cpufreq"
 
           for pkg in $PLUGINS; do
             echo ""
