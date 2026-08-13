@@ -32,8 +32,9 @@ PACKAGES="$PACKAGES ip-full ipset iw ppp ppp-mod-pppoe luci-proto-ppp luci-proto
 PACKAGES="$PACKAGES -odhcpd odhcpd-ipv6only odhcp6c"
 PACKAGES="$PACKAGES -wpad-basic-mbedtls -wpad-mbedtls wpad-openssl -libustream-mbedtls -libustream-wolfssl libustream-openssl"
 # [无线驱动]
-PACKAGES="$PACKAGES kmod-cfg80211 kmod-mac80211 kmod-mt76-connac kmod-mt76-core kmod-hwmon-nct7802 rtl826x-firmware"
+PACKAGES="$PACKAGES kmod-cfg80211 kmod-mac80211 kmod-mt76-connac kmod-mt76-core kmod-i2c-an7581 kmod-hwmon-nct7802 rtl826x-firmware"
 PACKAGES="$PACKAGES airoha-en7581-mt7996-npu-firmware"
+PACKAGES="$PACKAGES kmod-phy-rtl8261n"
 PACKAGES="$PACKAGES kmod-mt7996-firmware kmod-mt7996-firmware-common kmod-mt7996e"
 
 #[其它驱动]
