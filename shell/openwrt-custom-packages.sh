@@ -5,11 +5,11 @@
 #Others - DO NOT REMOVE
 CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-cpufreq luci-i18n-cpufreq-zh-cn"
 
-#动态DNS
-CUSTOM_PACKAGES="$CUSTOM_PACKAGES ddns-scripts-cloudflare luci-app-ddns luci-i18n-ddns-zh-cn"
-
 # cpu状态
 CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-cpu-status"
+
+#动态DNS
+CUSTOM_PACKAGES="$CUSTOM_PACKAGES ddns-scripts-cloudflare luci-app-ddns luci-i18n-ddns-zh-cn"
 
 #samb文件共享
 #CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-samba4 luci-i18n-samba4-zh-cn"
