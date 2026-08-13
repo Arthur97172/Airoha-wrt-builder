@@ -112,6 +112,22 @@ if [ "$THIRD_PARTY_OK" = "1" ]; then
     fi
 fi
 
+# 若构建 cpufreq，则只复制 cpufreq 相关插件
+if echo "$PACKAGES" | grep -q "luci-app-cpufreq"; then
+    if [ -d "apps" ]; then
+        cp -f apps/cpufreq*.apk apk-merged/ 2>/dev/null || true
+        cp -f apps/luci-app-cpufreq*.apk apk-merged/ 2>/dev/null || true
+        cp -f apps/luci-i18n-cpufreq-zh-cn*.apk apk-merged/ 2>/dev/null || true
+    elif [ -d "../apps" ]; then
+        cp -f ../apps/cpufreq*.apk apk-merged/ 2>/dev/null || true
+        cp -f ../apps/luci-app-cpufreq*.apk apk-merged/ 2>/dev/null || true
+        cp -f ../apps/luci-i18n-cpufreq-zh-cn*.apk apk-merged/ 2>/dev/null || true
+    fi
+    echo "✅ cpufreq 相关插件已复制完成！"
+else
+    echo "⚪️ 未选择 luci-app-cpufreq"
+fi
+
 if [ "$THIRD_PARTY_OK" = "1" ]; then
     echo "复制第三方 APK 到 imagebuilder/packages/ ..."
     mkdir -p packages
@@ -295,22 +311,6 @@ if echo "$PACKAGES" | grep -q "luci-app-nikki"; then
     echo "✅ nikki预装GeoData 数据库完成！"
 else
     echo "⚪️ 未选择 luci-app-nikki"
-fi
-
-# 若构建 cpufreq，则只复制 cpufreq 相关插件
-if echo "$PACKAGES" | grep -q "luci-app-cpufreq"; then
-    if [ -d "apps" ]; then
-        cp -f apps/cpufreq*.apk apk-merged/ 2>/dev/null || true
-        cp -f apps/luci-app-cpufreq*.apk apk-merged/ 2>/dev/null || true
-        cp -f apps/luci-i18n-cpufreq-zh-cn*.apk apk-merged/ 2>/dev/null || true
-    elif [ -d "../apps" ]; then
-        cp -f ../apps/cpufreq*.apk apk-merged/ 2>/dev/null || true
-        cp -f ../apps/luci-app-cpufreq*.apk apk-merged/ 2>/dev/null || true
-        cp -f ../apps/luci-i18n-cpufreq-zh-cn*.apk apk-merged/ 2>/dev/null || true
-    fi
-    echo "✅ cpufreq 相关插件已复制完成！"
-else
-    echo "⚪️ 未选择 luci-app-cpufreq"
 fi
 
 # 构建镜像
