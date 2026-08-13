@@ -2,6 +2,9 @@
 # 25.12.x 第三方插件配置 (APK 格式) - aarch64_generic 专用
 # 启用第三方插件时取消对应注释
 
+#Others - DO NOT REMOVE
+CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-cpufreq luci-i18n-cpufreq-zh-cn"
+
 #动态DNS
 CUSTOM_PACKAGES="$CUSTOM_PACKAGES ddns-scripts-cloudflare luci-app-ddns luci-i18n-ddns-zh-cn"
 
