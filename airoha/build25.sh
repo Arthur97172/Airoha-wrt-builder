@@ -297,6 +297,22 @@ else
     echo "⚪️ 未选择 luci-app-nikki"
 fi
 
+# 若构建 cpufreq，则只复制 cpufreq 相关插件
+if echo "$PACKAGES" | grep -q "luci-app-cpufreq"; then
+    if [ -d "apps" ]; then
+        cp -f apps/cpufreq*.apk apk-merged/ 2>/dev/null || true
+        cp -f apps/luci-app-cpufreq*.apk apk-merged/ 2>/dev/null || true
+        cp -f apps/luci-i18n-cpufreq-zh-cn*.apk apk-merged/ 2>/dev/null || true
+    elif [ -d "../apps" ]; then
+        cp -f ../apps/cpufreq*.apk apk-merged/ 2>/dev/null || true
+        cp -f ../apps/luci-app-cpufreq*.apk apk-merged/ 2>/dev/null || true
+        cp -f ../apps/luci-i18n-cpufreq-zh-cn*.apk apk-merged/ 2>/dev/null || true
+    fi
+    echo "✅ cpufreq 相关插件已复制完成！"
+else
+    echo "⚪️ 未选择 luci-app-cpufreq"
+fi
+
 # 构建镜像
 echo "$(date '+%Y-%m-%d %H:%M:%S') - 开始构建......打印所有包名"
 echo "$PACKAGES"
