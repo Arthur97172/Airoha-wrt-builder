@@ -91,7 +91,7 @@ jobs:
 
           # 克隆wifi7-manager
           echo ">>> 克隆 Arthur97172/mt7996-wifi7-manager..."
-          git clone --depth=1 -b main https://github.com/Arthur97172/mt7996-wifi7-manager.git /tmp/arthur97172
+          git clone --depth=1 -b main https://github.com/Arthur97172/mt7996-wifi7-manager.git /tmp/arthur97172/luci-app-wifimgr
           for pkg in luci-app-wifimgr; do
             copy_plugin "/tmp/arthur97172" "$pkg"
           done
