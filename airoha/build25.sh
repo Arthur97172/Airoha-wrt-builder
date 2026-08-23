@@ -38,7 +38,7 @@ PACKAGES="$PACKAGES wireless-regdb"
 PACKAGES="$PACKAGES kmod-mt7996-firmware kmod-mt7996-firmware-common kmod-mt7996e"
 
 #[其它驱动]
-PACKAGES="$PACKAGES kmod-phy-aquantia kmod-phy-realtek kmod-phylink kmod-sfp ethtool iperf3 kmod-thermal lm-sensors"
+PACKAGES="$PACKAGES kmod-phy-aquantia kmod-phy-realtek kmod-phylink kmod-sfp ethtool iperf3 kmod-thermal lm-sensors kmod-tcp-bbr"
 
 # [Web 界面]
 PACKAGES="$PACKAGES luci luci-base luci-i18n-base-zh-cn luci-mod-admin-full luci-i18n-firewall-zh-cn"
