@@ -62,6 +62,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: 服务器信息
+        run: |
+          echo "------------------------------- CPU -------------------------------"
+          echo "物理数量: $(cat /proc/cpuinfo| grep 'physical id'| sort| uniq| wc -l)"
+          echo "型号: $(cat /proc/cpuinfo | grep name | cut -f2 -d: | uniq -c | xargs)"
+          echo "------------------------------- 内存 -------------------------------"
+          sudo lshw -short -C memory | grep GiB
+          echo "------------------------------- 磁盘 -------------------------------"
+          df -Th
+
       - name: ⚙️ 设置可执行权限
         run: |
           chmod +x airoha/build25.sh
