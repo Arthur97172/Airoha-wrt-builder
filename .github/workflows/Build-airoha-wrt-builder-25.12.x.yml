@@ -110,6 +110,9 @@ jobs:
           cp shell/prepare-packages.sh imagebuilder/
           mkdir -p imagebuilder/files/etc/uci-defaults imagebuilder/files/etc/apk/repositories.d
           cp files/etc/uci-defaults/99-custom.sh imagebuilder/files/etc/uci-defaults/
+          chmod +x imagebuilder/files/etc/uci-defaults/99-custom.sh
+          cp files/etc/uci-defaults/99-w1700k-wireless-defaults imagebuilder/files/etc/uci-defaults/
+          chmod +x imagebuilder/files/etc/uci-defaults/99-w1700k-wireless-defaults
           cat files/customfeeds/25.customfeeds.list >> imagebuilder/files/etc/apk/repositories.d/customfeeds.list
           echo "✅ 文件准备完成"
 
