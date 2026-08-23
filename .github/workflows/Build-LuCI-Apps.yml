@@ -59,7 +59,7 @@ jobs:
             local pkg="$2"
             local found_path=""
 
-            for path in "$repo_dir/package/$pkg" "$repo_dir/apps/$pkg" "$repo_dir/$pkg"; do
+            for path in "$repo_dir/package/$pkg" "$repo_dir/apps/$pkg" "$repo_dir/$pkg" "$repo_dir/lede/$pkg"; do
               if [ -d "$path" ]; then
                 found_path="$path"
                 break
