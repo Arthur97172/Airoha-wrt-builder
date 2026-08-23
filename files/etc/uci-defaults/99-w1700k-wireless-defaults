@@ -116,7 +116,7 @@ apply_policy() {
 
 	for radio in $(radios_for_band 5g); do
 		uci -q set wireless."$radio".country='US'
-		uci -q set wireless."$radio".channel='36'
+		uci -q set wireless."$radio".channel='auto'
 		uci -q set wireless."$radio".htmode='EHT160'
 		uci -q set wireless."$radio".txpower='28'
 		uci -q set wireless."$radio".he_su_beamformer='1'
@@ -145,7 +145,7 @@ apply_policy() {
 	for radio in $(radios_for_band 6g); do
 		uci -q set wireless."$radio".country='US'
 		uci -q set wireless."$radio".band='6g'
-		uci -q set wireless."$radio".channel='37'
+		uci -q set wireless."$radio".channel='auto'
 		uci -q set wireless."$radio".htmode='EHT320'
 		uci -q set wireless."$radio".txpower='28'
 		uci -q set wireless."$radio".eht_su_beamformer='1'
