@@ -98,7 +98,7 @@ apply_policy() {
 		uci -q set wireless."$radio".country='TW'
 		uci -q set wireless."$radio".channel='6'
 		uci -q set wireless."$radio".htmode='HE40'
-		uci -q set wireless."$radio".txpower='28'
+		uci -q set wireless."$radio".txpower='23'
 		uci -q set wireless."$radio".he_mu_beamformer='0'
 		uci -q set wireless."$radio".he_su_beamformer='1'
 		for iface in $(ifaces_for_radio "$radio"); do
@@ -147,7 +147,7 @@ apply_policy() {
 		uci -q set wireless."$radio".band='6g'
 		uci -q set wireless."$radio".channel='37'
 		uci -q set wireless."$radio".htmode='EHT320'
-		uci -q set wireless."$radio".txpower='28'
+		uci -q set wireless."$radio".txpower='23'
 		uci -q set wireless."$radio".eht_su_beamformer='1'
 		uci -q set wireless."$radio".eht_mu_beamformer='1'
 		uci -q set wireless."$radio".he_su_beamformer='1'
