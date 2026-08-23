@@ -158,7 +158,7 @@ apply_policy() {
 			uci -q set wireless."$iface".network='lan'
 			delete_if_present wireless."$iface".ssid
 			delete_if_present wireless."$iface".owe_groups
-			uci -q set wireless."$iface".mesh_id='W1700K-6G-BACKHAUL'
+			uci -q set wireless."$iface".mesh_id='W1700K-6G'
 			uci -q set wireless."$iface".encryption='sae'
 			delete_if_present wireless."$iface".key
 			uci -q set wireless."$iface".mesh_fwding='1'
