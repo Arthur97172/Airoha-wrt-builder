@@ -89,9 +89,9 @@ jobs:
             copy_plugin "/tmp/yyh" "$pkg"
           done
 
-          # 【新增】克隆 chenmozhijin/turboacc 仓库
-          echo ">>> 克隆 chenmozhijin/turboacc (main)..."
-          git clone --depth=1 https://github.com/chenmozhijin/turboacc.git /tmp/turboacc
+          # 【新增】克隆 mufeng05/turboacc 仓库
+          echo ">>> 克隆 mufeng05/turboacc (main)..."
+          git clone --depth=1 https://github.com/mufeng05/turboacc.git /tmp/turboacc
           copy_plugin "/tmp/turboacc" "luci-app-turboacc"
 
           echo ""
