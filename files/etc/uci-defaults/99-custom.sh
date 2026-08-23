@@ -85,4 +85,11 @@ FILE_PATH="/etc/openwrt_release"
 NEW_DESCRIPTION="WRTVERSIONINFO VERXXXX"
 sed -i "s/DISTRIB_DESCRIPTION='[^']*'/DISTRIB_DESCRIPTION='$NEW_DESCRIPTION'/" "$FILE_PATH"
 
+# 5. 强制开启 BBR 拥塞控制算法
+sysctl -w net.core.default_qdisc=fq >/dev/null 2>&1
+sysctl -w net.ipv4.tcp_congestion_control=bbr >/dev/null 2>&1
+# 如果希望永久写入系统配置，也可以顺便追加到 sysctl.conf
+echo "net.core.default_qdisc=fq" >> /etc/sysctl.conf
+echo "net.ipv4.tcp_congestion_control=bbr" >> /etc/sysctl.conf
+
 exit 0
