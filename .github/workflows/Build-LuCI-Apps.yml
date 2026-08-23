@@ -89,6 +89,11 @@ jobs:
             copy_plugin "/tmp/yyh" "$pkg"
           done
 
+          # 【新增】克隆 chenmozhijin/turboacc 仓库
+          echo ">>> 克隆 chenmozhijin/turboacc (main)..."
+          git clone --depth=1 https://github.com/chenmozhijin/turboacc.git /tmp/turboacc
+          copy_plugin "/tmp/turboacc" "luci-app-turboacc"
+
           echo ""
           echo "=== 已成功整合到 package/ 目录的插件 ==="
           ls -d package/luci-app-*
@@ -104,6 +109,7 @@ jobs:
           echo "CONFIG_PACKAGE_luci-app-mlo=m" >> .config
           echo "CONFIG_PACKAGE_luci-app-w1700k-fancontrol=m" >> .config
           echo "CONFIG_PACKAGE_luci-app-cpufreq=m" >> .config
+          echo "CONFIG_PACKAGE_luci-app-turboacc=m" >> .config         
 
           make defconfig
           echo "配置完成"
@@ -135,6 +141,7 @@ jobs:
           rm -f apps/luci-app-airoha-fancontrol*.apk apps/luci-i18n-airoha-fancontrol*.apk
           rm -f apps/cpufreq*.apk apps/luci-app-cpufreq*.apk apps/luci-i18n-cpufreq-zh-cn*.apk
           rm -f apps/luci-app-mlo*.apk apps/luci-i18n-mlo-zh-cn*.apk
+          rm -f apps/luci-app-turboacc*.apk apps/luci-i18n-turboacc-zh-cn*.apk
 
           # 提取编译完成的目标包
           find sdk/bin -name "*.apk" | while read -r f; do
@@ -144,6 +151,7 @@ jobs:
               luci-app-w1700k-fancontrol*|luci-i18n-w1700k-fancontrol*|\
               luci-app-airoha-fancontrol*|luci-i18n-airoha-fancontrol*|\
               cpufreq**|luci-app-cpufreq*|luci-i18n-cpufreq-zh-cn*|\
+              luci-app-turboacc*|luci-i18n-turboacc-zh-cn*|\
               luci-app-mlo*|luci-i18n-mlo-zh-cn*)
                 cp -v "$f" apps/
                 ;;
@@ -175,6 +183,8 @@ jobs:
             apps/luci-i18n-cpufreq-zh-cn*.apk
             apps/luci-app-mlo*.apk
             apps/luci-i18n-mlo-zh-cn*.apk
+            apps/apps/luci-app-turboacc*.apk
+            apps/luci-i18n-turboacc-zh-cn*.apk
           if-no-files-found: error
           retention-days: 30
 
