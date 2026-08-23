@@ -97,7 +97,7 @@ apply_policy() {
 	for radio in $(radios_for_band 2g); do
 		uci -q set wireless."$radio".country='US'
 		uci -q set wireless."$radio".channel='auto'
-		uci -q set wireless."$radio".htmode='HE20'
+		uci -q set wireless."$radio".htmode='HE40'
 		uci -q set wireless."$radio".txpower='28'
 		uci -q set wireless."$radio".he_mu_beamformer='0'
 		uci -q set wireless."$radio".he_su_beamformer='1'
@@ -117,8 +117,8 @@ apply_policy() {
 	for radio in $(radios_for_band 5g); do
 		uci -q set wireless."$radio".country='US'
 		uci -q set wireless."$radio".channel='36'
-		uci -q set wireless."$radio".htmode='EHT80'
-		uci -q set wireless."$radio".txpower='29'
+		uci -q set wireless."$radio".htmode='EHT160'
+		uci -q set wireless."$radio".txpower='28'
 		uci -q set wireless."$radio".he_su_beamformer='1'
 		uci -q set wireless."$radio".he_mu_beamformer='1'
 		uci -q set wireless."$radio".eht_su_beamformer='1'
@@ -146,7 +146,7 @@ apply_policy() {
 		uci -q set wireless."$radio".country='US'
 		uci -q set wireless."$radio".band='6g'
 		uci -q set wireless."$radio".channel='37'
-		uci -q set wireless."$radio".htmode='EHT160'
+		uci -q set wireless."$radio".htmode='EHT320'
 		uci -q set wireless."$radio".txpower='28'
 		uci -q set wireless."$radio".eht_su_beamformer='1'
 		uci -q set wireless."$radio".eht_mu_beamformer='1'
@@ -176,7 +176,7 @@ apply_policy() {
 	uci -q commit system
 }
 
-[ "$(w1700k_board_name)" = 'econet,w1700k-ubi' ] || exit 0
+[ "$(w1700k_board_name)" = 'gemtek,w1700k-ubi' ] || exit 0
 [ "$(uci -q get "$MARKER" 2>/dev/null || true)" = '1' ] && exit 0
 
 case "$MAX_ATTEMPTS" in
