@@ -95,8 +95,8 @@ apply_policy() {
 	local radio iface
 
 	for radio in $(radios_for_band 2g); do
-		uci -q set wireless."$radio".country='US'
-		uci -q set wireless."$radio".channel='auto'
+		uci -q set wireless."$radio".country='TW'
+		uci -q set wireless."$radio".channel='6'
 		uci -q set wireless."$radio".htmode='HE40'
 		uci -q set wireless."$radio".txpower='28'
 		uci -q set wireless."$radio".he_mu_beamformer='0'
@@ -115,8 +115,8 @@ apply_policy() {
 	done
 
 	for radio in $(radios_for_band 5g); do
-		uci -q set wireless."$radio".country='US'
-		uci -q set wireless."$radio".channel='auto'
+		uci -q set wireless."$radio".country='TW'
+		uci -q set wireless."$radio".channel='36'
 		uci -q set wireless."$radio".htmode='EHT160'
 		uci -q set wireless."$radio".txpower='28'
 		uci -q set wireless."$radio".he_su_beamformer='1'
@@ -127,7 +127,7 @@ apply_policy() {
 		uci -q set wireless."$radio".background_radar='1'
 		for iface in $(ifaces_for_radio "$radio"); do
 			[ "$(uci -q get wireless."$iface".mode 2>/dev/null || true)" = 'ap' ] || continue
-			uci -q set wireless."$iface".ssid='W1700K-5G'
+			uci -q set wireless."$iface".ssid='W1700K'
 			uci -q set wireless."$iface".encryption='none'
 			delete_if_present wireless."$iface".key
 			apply_ap_common "$iface"
@@ -143,9 +143,9 @@ apply_policy() {
 	done
 
 	for radio in $(radios_for_band 6g); do
-		uci -q set wireless."$radio".country='US'
+		uci -q set wireless."$radio".country='TW'
 		uci -q set wireless."$radio".band='6g'
-		uci -q set wireless."$radio".channel='auto'
+		uci -q set wireless."$radio".channel='37'
 		uci -q set wireless."$radio".htmode='EHT320'
 		uci -q set wireless."$radio".txpower='28'
 		uci -q set wireless."$radio".eht_su_beamformer='1'
@@ -158,7 +158,7 @@ apply_policy() {
 			uci -q set wireless."$iface".network='lan'
 			delete_if_present wireless."$iface".ssid
 			delete_if_present wireless."$iface".owe_groups
-			uci -q set wireless."$iface".mesh_id='W1700K-6G'
+			uci -q set wireless."$iface".mesh_id='W1700K'
 			uci -q set wireless."$iface".encryption='sae'
 			delete_if_present wireless."$iface".key
 			uci -q set wireless."$iface".mesh_fwding='1'
