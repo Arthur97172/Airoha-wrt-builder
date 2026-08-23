@@ -90,8 +90,8 @@ jobs:
           done
 
           # 克隆 mufeng05 仓库
-          echo ">>> 克隆 mufeng05/turboacc (main)..."
-          git clone --depth=1 -b main https://github.com/mufeng05/turboacc.git /tmp/turboacc
+          echo ">>> 克隆 chenmozhijin/turboacc (main)..."
+          git clone --depth=1 -b main https://github.com/chenmozhijin/turboacc.git /tmp/turboacc
           for pkg in luci-app-turboacc; do
             copy_plugin "/tmp/turboacc" "$pkg"
           done
