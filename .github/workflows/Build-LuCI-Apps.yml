@@ -114,7 +114,7 @@ jobs:
           set -e
           cd sdk
 
-          PLUGINS="libubox lluci-app-airoha-flowsense luci-app-airoha-npu luci-app-airoha-fancontrol luci-app-mlo luci-app-w1700k-fancontrol luci-app-cpufreq"
+          PLUGINS="libubox luci-app-airoha-flowsense luci-app-airoha-npu luci-app-airoha-fancontrol luci-app-mlo luci-app-w1700k-fancontrol luci-app-cpufreq"
 
           for pkg in $PLUGINS; do
             echo ""
