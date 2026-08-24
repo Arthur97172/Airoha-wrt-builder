@@ -104,6 +104,7 @@ jobs:
           echo "CONFIG_PACKAGE_luci-app-mlo=m" >> .config
           echo "CONFIG_PACKAGE_luci-app-w1700k-fancontrol=m" >> .config
           echo "CONFIG_PACKAGE_luci-app-cpufreq=m" >> .config
+          echo "CONFIG_PACKAGE_libubox=m" >> .config
 
           make defconfig
           echo "配置完成"
@@ -113,7 +114,7 @@ jobs:
           set -e
           cd sdk
 
-          PLUGINS="luci-app-airoha-flowsense luci-app-airoha-npu luci-app-airoha-fancontrol luci-app-mlo luci-app-w1700k-fancontrol luci-app-cpufreq"
+          PLUGINS="libubox lluci-app-airoha-flowsense luci-app-airoha-npu luci-app-airoha-fancontrol luci-app-mlo luci-app-w1700k-fancontrol luci-app-cpufreq"
 
           for pkg in $PLUGINS; do
             echo ""
@@ -135,6 +136,7 @@ jobs:
           rm -f apps/luci-app-airoha-fancontrol*.apk apps/luci-i18n-airoha-fancontrol*.apk
           rm -f apps/cpufreq*.apk apps/luci-app-cpufreq*.apk apps/luci-i18n-cpufreq-zh-cn*.apk
           rm -f apps/luci-app-mlo*.apk apps/luci-i18n-mlo-zh-cn*.apk
+          rm -f apps/libubox*.apk
 
           # 提取编译完成的目标包
           find sdk/bin -name "*.apk" | while read -r f; do
@@ -144,6 +146,7 @@ jobs:
               luci-app-w1700k-fancontrol*|luci-i18n-w1700k-fancontrol*|\
               luci-app-airoha-fancontrol*|luci-i18n-airoha-fancontrol*|\
               cpufreq**|luci-app-cpufreq*|luci-i18n-cpufreq-zh-cn*|\
+              libubox*|\
               luci-app-mlo*|luci-i18n-mlo-zh-cn*)
                 cp -v "$f" apps/
                 ;;
@@ -175,6 +178,7 @@ jobs:
             apps/luci-i18n-cpufreq-zh-cn*.apk
             apps/luci-app-mlo*.apk
             apps/luci-i18n-mlo-zh-cn*.apk
+            apps/libubox*.apk
           if-no-files-found: error
           retention-days: 30
 
