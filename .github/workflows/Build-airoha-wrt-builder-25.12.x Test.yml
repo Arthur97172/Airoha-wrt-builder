@@ -1,0 +1,228 @@
+name: 📦 Build airoha-wrt-25.12.x Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      wrt_version:
+        description: "选择OpenWrt/Immortalwrt"
+        required: true
+        default: "immortalwrt"
+        type: choice
+        options:
+          - 'immortalwrt'
+          - 'openwrt'
+      luci_version:
+        description: "选择luci版本"
+        required: false
+        default: "snapshots"
+        type: choice
+        options:        
+          - 'snapshots'
+      profile:
+        type: choice
+        description: |
+          输入 软路由型号 可选值如下：
+        options:
+          - airoha_an7581-evb-emmc-eagle
+          - airoha_an7581-evb-emmc-kite
+          - airoha_an7581-evb
+          - gemtek_w1700k-ubi
+          - nokia_valyrian
+          - nokia_xg-040g-md
+          - nokia_xg-040g-md-ubi          
+        required: true
+        default: 'gemtek_w1700k-ubi'
+      ipaddr:
+        description: "请设置软路由的管理地址,格式:192.168.x.1"
+        required: true
+        default: "192.168.10.1"       
+      include_docker:
+        description: "是否集成 Docker 插件"
+        required: true
+        default: "no"
+        type: choice
+        options:
+          - 'yes'
+          - 'no'
+
+env:
+  FINAL_LUCI_VER: ${{ inputs.luci_version }}
+  FINAL_WRT: ${{ inputs.wrt_version }}
+  WRT_NAME: ${{ (inputs.wrt_version == 'openwrt') && 'OpenWrt' || 'ImmortalWrt' }}
+  DOCKER: ${{ inputs.include_docker }}
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: 服务器信息
+        run: |
+          echo "------------------------------- CPU -------------------------------"
+          echo "物理数量: $(cat /proc/cpuinfo| grep 'physical id'| sort| uniq| wc -l)"
+          echo "型号: $(cat /proc/cpuinfo | grep name | cut -f2 -d: | uniq -c | xargs)"
+          echo "------------------------------- 内存 -------------------------------"
+          sudo lshw -short -C memory | grep GiB
+          echo "------------------------------- 磁盘 -------------------------------"
+          df -Th
+
+      - name: ⚙️ 设置可执行权限
+        run: |
+          chmod +x airoha/build25.sh
+          chmod +x airoha/openwrt_repositories
+          chmod +x airoha/immortalwrt_repositories
+          chmod +x shell/prepare-packages.sh
+          chmod +x shell/openwrt-custom-packages.sh
+          chmod +x shell/immortalwrt-custom-packages.sh
+
+      - name: 🛠️ 安装依赖
+        run: |      
+          sudo apt-get update
+          sudo apt-get install -y build-essential libncurses5-dev libncursesw5-dev zstd curl unzip tree qemu-utils genisoimage
+
+      - name: ⚙️ Set custom IP config
+        run: |
+          CONFIG_PATH="./files/etc/uci-defaults/99-custom.sh"
+          echo "当前网络配置路径: $CONFIG_PATH"
+          sed -i "s/版本号/${{ env.FINAL_LUCI_VER }}/g" "$CONFIG_PATH"
+          sed -i "s/__IPADDR__/${{ inputs.ipaddr }}/g" "$CONFIG_PATH"
+          sed -i "s/WRTVERSIONINFO/${{ env.WRT_NAME }}/g" "$CONFIG_PATH"
+          sed -i "s/VERXXXX/${{ env.FINAL_LUCI_VER }}/g" "$CONFIG_PATH"
+          [ -f "./files/etc/banner" ] && sed -i "s/版本号/${{ env.FINAL_LUCI_VER }}/g" "./files/etc/banner"
+          echo "✅ 配置修改完成，输出预览："
+          cat "$CONFIG_PATH"
+
+      - name: ⏬ 下载 ${{ env.FINAL_WRT }} ImageBuilder 25.12.x
+        run: |
+          URL="https://downloads.${{ env.FINAL_WRT }}.org/${{ env.FINAL_LUCI_VER }}/targets/airoha/an7581/${{ env.FINAL_WRT }}-imagebuilder-airoha-an7581.Linux-x86_64.tar.zst"
+          curl -Lf -o imagebuilder.tar.zst "$URL"
+          tar --use-compress-program=unzstd -xvf imagebuilder.tar.zst
+          mv -- ${{ env.FINAL_WRT }}-imagebuilder-* imagebuilder
+
+      - name: 🔄 复制${{ inputs.wrt_version }}必备文件
+        run: |   
+          cp airoha/build25.sh imagebuilder/
+          
+          if [ "${{ env.FINAL_WRT }}" = "openwrt" ]; then
+            # 删掉 cp airoha/openwrt_repositories imagebuilder/repositories
+            cat shell/openwrt-custom-packages.sh >> imagebuilder/apk-custom-packages.sh
+          else
+            # 删掉 cp airoha/immortalwrt_repositories imagebuilder/repositories
+            cat shell/immortalwrt-custom-packages.sh >> imagebuilder/apk-custom-packages.sh
+          fi
+          chmod +x imagebuilder/apk-custom-packages.sh
+          cp shell/prepare-packages.sh imagebuilder/
+          mkdir -p imagebuilder/files/etc/uci-defaults imagebuilder/files/etc/apk/repositories.d
+          cp files/etc/uci-defaults/99-custom.sh imagebuilder/files/etc/uci-defaults/
+          chmod +x imagebuilder/files/etc/uci-defaults/99-custom.sh
+          cp files/etc/uci-defaults/99-w1700k-wireless-defaults imagebuilder/files/etc/uci-defaults/
+          chmod +x imagebuilder/files/etc/uci-defaults/99-w1700k-wireless-defaults
+          cat files/customfeeds/25.customfeeds.list >> imagebuilder/files/etc/apk/repositories.d/customfeeds.list
+          echo "✅ 文件准备完成"
+
+      - name: ⚙️ 动态获取 Kmod 哈希并更新配置
+        run: |
+          set -e
+          cd imagebuilder
+
+          BASE_URL="https://downloads.${{ env.FINAL_WRT }}.org/${{ env.FINAL_LUCI_VER }}/targets/airoha/an7581/kmods"
+
+          echo "🔍 正在从本地 ImageBuilder 全盘解析真实内核签名..."
+
+          # 1. 递归扫描所有包文件 (.apk/.ipk) 及索引文件内容，提取标准内核签名串
+          LOCAL_KERNEL_RAW=$(find . -type f \( -name "*.apk" -o -name "*.ipk" -o -name "Packages*" -o -name "*.adb" -o -name "*.manifest" \) 2>/dev/null | xargs -r grep -oE '[0-9]+\.[0-9]+\.[0-9]+~[a-f0-9]{32}-r[0-9]+' 2>/dev/null | head -n 1 | awk -F: '{print $NF}' || true)
+
+          # 2. 若索引内未匹配到，扫描文件名本身
+          if [ -z "$LOCAL_KERNEL_RAW" ]; then
+            LOCAL_KERNEL_RAW=$(find . -type f 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+~[a-f0-9]{32}-r[0-9]+' | head -n 1 || true)
+          fi
+
+          # 3. 若仍未匹配到，扫描整个 imagebuilder 目录下的文本文件内容
+          if [ -z "$LOCAL_KERNEL_RAW" ]; then
+            LOCAL_KERNEL_RAW=$(grep -rnoE '[0-9]+\.[0-9]+\.[0-9]+~[a-f0-9]{32}-r[0-9]+' . 2>/dev/null | head -n 1 | awk -F: '{print $NF}' || true)
+          fi
+
+          echo "📌 本地提取到的内核版本串: $LOCAL_KERNEL_RAW"
+
+          # 解析版本串
+          if [[ "$LOCAL_KERNEL_RAW" =~ ([0-9]+\.[0-9]+\.[0-9]+)~([a-f0-9]{32})-r([0-9]+) ]]; then
+            K_VER="${BASH_REMATCH[1]}"
+            K_HASH="${BASH_REMATCH[2]}"
+            K_REV="${BASH_REMATCH[3]}"
+          else
+            echo "⚠️ 未能精确提取完整版本串，尝试深度定位 32 位 Vermagic 哈希..."
+            K_HASH=$(grep -rnoE '[a-f0-9]{32}' . 2>/dev/null | head -n 1 | awk -F: '{print $NF}' || true)
+            K_VER=$(grep -rnoE '6\.[0-9]+\.[0-9]+' . 2>/dev/null | head -n 1 | awk -F: '{print $NF}' || echo "6.18.41")
+            K_REV="1"
+          fi
+
+          if [ -n "$K_HASH" ]; then
+            KMOD_DIR="${K_VER}-${K_REV}-${K_HASH}"
+            echo "✅ 成功确定的 kmods 目录名: $KMOD_DIR"
+          else
+            echo "❌ 无法定位内核哈希！当前 ImageBuilder 目录结构如下："
+            ls -la
+            ls -la packages/ 2>/dev/null || true
+            exit 1
+          fi
+
+          FULL_KMOD_URL="${BASE_URL}/${KMOD_DIR}/packages.adb"
+
+          # 4. 校验远程 kmods 仓库地址可用性
+          if curl -sI "$FULL_KMOD_URL" | grep -qE "200 OK|302 Found|301 Moved"; then
+            echo "✅ 远程 kmods 仓库在线且哈希匹配成功！"
+          else
+            echo "⚠️ 警告: 远程服务器上未找到对应的 kmods 目录 (${KMOD_DIR})。"
+            echo "💡 提示: 官方 snapshot 镜像已更新，请确保 CI 构建时重新下载最新的 ImageBuilder 压缩包。"
+          fi
+
+          # ==================== 在这里粘贴/修改你的代码 ====================
+          if [ -f "repositories" ]; then
+            # 兼容 ImageBuilder 自带的 repositories（替换 KMOD 地址）
+            sed -i "s|.*kmods.*|${FULL_KMOD_URL}|g" repositories 2>/dev/null || true
+            sed -i "s|KMOD_PLACEHOLDER|${FULL_KMOD_URL}|g" repositories 2>/dev/null || true
+            sed -i "s|VERSION_PLACEHOLDER|${{ env.FINAL_LUCI_VER }}|g" repositories 2>/dev/null || true
+          fi
+          # =================================================================
+
+          echo "最终 repositories 内容："
+          cat repositories
+
+      - name: 🧱 构建 ${{ inputs.wrt_version }} 25.12.x 固件
+        working-directory: ./imagebuilder
+        env:
+          INCLUDE_DOCKER: ${{ inputs.include_docker }}
+        run: |
+          bash ./build25.sh "${{ inputs.profile }}"
+
+      - name: 📅 获取当前日期
+        id: date
+        run: |
+          echo "date=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
+
+      - name: 📜 生成发布说明
+        run: |
+          cat > ${{ github.workspace }}/router-info.md <<EOF
+          ## 📡 路由器后台信息
+          📌 版本： ${{ env.FINAL_WRT }}-${{ env.FINAL_LUCI_VER }}
+          🏠 后台地址： ${{ inputs.ipaddr }}
+          👤 用户名： root
+          🔑 密码： 无
+          🐳 Docker状态： ${{ inputs.include_docker == 'yes' && '已集成' || '未集成' }}
+          EOF
+
+      - name: 🚀 上传到 ${{ inputs.wrt_version }} Release
+        uses: softprops/action-gh-release@v2.2.1
+        with:
+          tag_name: ${{ steps.date.outputs.date }}-${{ env.FINAL_WRT }}-${{ env.FINAL_LUCI_VER }}-airoha-an7581-RELEASE-Docker-${{ inputs.include_docker }}
+          body_path: ${{ github.workspace }}/router-info.md
+          files: |
+            imagebuilder/bin/targets/airoha/an7581/*squashfs-sysupgrade.*
+            imagebuilder/bin/targets/airoha/an7581/*squashfs-factory.*
+          token: ${{ secrets.GITHUB_TOKEN }}
