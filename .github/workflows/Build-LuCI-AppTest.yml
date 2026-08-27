@@ -90,11 +90,11 @@ jobs:
           done
 
 
-          # 克隆 coolsnowwolf 仓库
-          echo ">>> 克隆 coolsnowwolf/luci (openwrt-25.12)..."
-          git clone --depth=1 -b openwrt-25.12 https://github.com/coolsnowwolf/luci.git /tmp/coolsnowwolf
+          # 克隆 y9858 仓库
+          echo ">>> 克隆 y9858/luci-app-turboacc-mtk (main)..."
+          git clone --depth=1 -b main https://github.com/y9858/luci-app-turboacc-mtk.git /tmp/y9858/luci-app-turboacc
           for pkg in luci-app-turboacc; do
-            copy_plugin "/tmp/coolsnowwolf" "$pkg"
+            copy_plugin "/tmp/y9858/luci-app-turboacc" "$pkg"
           done
 
           echo ""
