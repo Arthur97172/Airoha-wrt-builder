@@ -305,8 +305,10 @@ if echo "$PACKAGES" | grep -q "luci-app-nikki"; then
     # 创建目录
     mkdir -p files/etc/nikki/run/
     # 下载 GeoIP and GeoSite 数据库
-    wget -q https://github.com/MetaCubeX/meta-rules-dat/releases/latest/download/geoip.dat -O files/etc/nikki/run/GeoIP.dat
-    wget -q https://github.com/MetaCubeX/meta-rules-dat/releases/latest/download/geosite.dat -O files/etc/nikki/run/GeoSite.dat
+    wget -q https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip.dat -O files/etc/nikki/run/geoip.dat
+    wget -q https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geosite.dat -O files/etc/nikki/run/geosite.dat
+    wget -q https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/country.mmdb -O files/etc/nikki/run/country.mmdb
+    wget -q https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/GeoLite2-ASN.mmdb -O files/etc/nikki/run/GeoLite2-ASN.mmdb
     chmod 755 files/etc/nikki/run/*
     echo "✅ nikki预装GeoData 数据库完成！"
 else
