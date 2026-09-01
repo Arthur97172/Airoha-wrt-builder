@@ -322,7 +322,7 @@ if echo "$PACKAGES" | grep -q "luci-app-nikki"; then
     cp -a /tmp/zashboard/dist/. files/etc/nikki/run/ui/
     # 删除临时文件
     rm -rf /tmp/zashboard
-    rm -f /tmp/dist-cdn-fonts.zip
+    rm -f /tmp/dist.zip
     # 设置目录和文件权限
     find files/etc/nikki/run -type d -exec chmod 755 {} \;
     find files/etc/nikki/run -type f -exec chmod 644 {} \;
