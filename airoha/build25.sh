@@ -112,22 +112,6 @@ if [ "$THIRD_PARTY_OK" = "1" ]; then
     fi
 fi
 
-# 若构建 cpufreq，则只复制 cpufreq 相关插件
-if echo "$PACKAGES" | grep -q "luci-app-cpufreq"; then
-    if [ -d "apps" ]; then
-        cp -f apps/cpufreq*.apk apk-merged/ 2>/dev/null || true
-        cp -f apps/luci-app-cpufreq*.apk apk-merged/ 2>/dev/null || true
-        cp -f apps/luci-i18n-cpufreq-zh-cn*.apk apk-merged/ 2>/dev/null || true
-    elif [ -d "../apps" ]; then
-        cp -f ../apps/cpufreq*.apk apk-merged/ 2>/dev/null || true
-        cp -f ../apps/luci-app-cpufreq*.apk apk-merged/ 2>/dev/null || true
-        cp -f ../apps/luci-i18n-cpufreq-zh-cn*.apk apk-merged/ 2>/dev/null || true
-    fi
-    echo "✅ cpufreq 相关插件已复制完成！"
-else
-    echo "⚪️ 未选择 luci-app-cpufreq"
-fi
-
 if [ "$THIRD_PARTY_OK" = "1" ]; then
     echo "复制第三方 APK 到 imagebuilder/packages/ ..."
     mkdir -p packages
@@ -276,6 +260,22 @@ PACKAGES="$PACKAGES $CUSTOM_PACKAGES"
 
 echo "$(date '+%Y-%m-%d %H:%M:%S') - 编译包列表:"
 echo "$PACKAGES"
+
+# 若构建 cpufreq，则只复制 cpufreq 相关插件
+if echo "$PACKAGES" | grep -q "luci-app-cpufreq"; then
+    if [ -d "apps" ]; then
+        cp -f apps/cpufreq*.apk apk-merged/ 2>/dev/null || true
+        cp -f apps/luci-app-cpufreq*.apk apk-merged/ 2>/dev/null || true
+        cp -f apps/luci-i18n-cpufreq-zh-cn*.apk apk-merged/ 2>/dev/null || true
+    elif [ -d "../apps" ]; then
+        cp -f ../apps/cpufreq*.apk apk-merged/ 2>/dev/null || true
+        cp -f ../apps/luci-app-cpufreq*.apk apk-merged/ 2>/dev/null || true
+        cp -f ../apps/luci-i18n-cpufreq-zh-cn*.apk apk-merged/ 2>/dev/null || true
+    fi
+    echo "✅ cpufreq 相关插件已复制完成！"
+else
+    echo "⚪️ 未选择 luci-app-cpufreq"
+fi
 
 # ============================================
 # [Docker 插件]
