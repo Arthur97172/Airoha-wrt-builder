@@ -209,6 +209,7 @@ jobs:
           🏠 后台地址： ${{ inputs.ipaddr }}
           👤 用户名： root
           🔑 密码： 无
+          📶 WiFi密码： 12345678
           🐳 Docker状态： ${{ inputs.include_docker == 'yes' && '已集成' || '未集成' }}
           EOF
 
