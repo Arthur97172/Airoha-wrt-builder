@@ -309,8 +309,56 @@ if echo "$PACKAGES" | grep -q "luci-app-nikki"; then
     wget -q https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geosite.dat -O files/etc/nikki/run/geosite.dat
     wget -q https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/country.mmdb -O files/etc/nikki/run/country.mmdb
     wget -q https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/GeoLite2-ASN.mmdb -O files/etc/nikki/run/GeoLite2-ASN.mmdb
-    chmod 755 files/etc/nikki/run/*
-    echo "✅ nikki预装GeoData 数据库完成！"
+    #chmod 755 files/etc/nikki/run/*
+    # =========================================================
+    # 自动获取 Zashboard 最新版本
+    # =========================================================
+    echo "📦 正在获取 Zashboard 最新版本..."
+    ZASHBOARD_VERSION=$(wget -qO- \
+        https://api.github.com/repos/Zephyruso/zashboard/releases/latest \
+        | grep '"tag_name":' \
+        | head -n 1 \
+        | sed -E 's/.*"([^"]+)".*/\1/')
+    if [ -n "$ZASHBOARD_VERSION" ]; then
+        echo "🔖 Zashboard 最新版本：$ZASHBOARD_VERSION"
+        # 锁定本次编译使用的版本
+        ZASHBOARD_URL="https://github.com/Zephyruso/zashboard/releases/download/${ZASHBOARD_VERSION}/dist-cdn-fonts.zip"
+        echo "📥 正在下载 Zashboard $ZASHBOARD_VERSION..."
+        rm -f /tmp/zashboard.zip
+        if wget -q --show-progress "$ZASHBOARD_URL" \
+            -O /tmp/zashboard.zip; then
+            # 清空旧 UI 文件，避免残留旧版本
+            rm -rf files/etc/nikki/run/ui/*          
+            # 解压 Zashboard
+            if unzip -qo /tmp/zashboard.zip \
+                -d files/etc/nikki/run/ui/; then
+                echo "✅ Zashboard $ZASHBOARD_VERSION 预装完成！"
+            else
+                echo "❌ Zashboard 解压失败！"
+                rm -f /tmp/zashboard.zip
+                exit 1
+            fi
+            rm -f /tmp/zashboard.zip
+        else
+            echo "❌ Zashboard $ZASHBOARD_VERSION 下载失败！"
+            rm -f /tmp/zashboard.zip
+            exit 1
+        fi
+    else
+        echo "❌ 无法获取 Zashboard 最新版本号！"
+        exit 1
+    fi
+    # =========================================================
+    # 设置文件权限
+    # =========================================================
+    find files/etc/nikki/run -type d -exec chmod 755 {} \;
+    find files/etc/nikki/run -type f -exec chmod 644 {} \;
+
+    echo "=========================================="
+    echo "✅ Nikki 预装完成"
+    echo "   GeoData    : MetaCubeX latest"
+    echo "   Zashboard  : $ZASHBOARD_VERSION"
+    echo "=========================================="
 else
     echo "⚪️ 未选择 luci-app-nikki"
 fi
