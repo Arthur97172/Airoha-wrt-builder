@@ -310,64 +310,18 @@ if echo "$PACKAGES" | grep -q "luci-app-nikki"; then
     wget -q https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/country.mmdb -O files/etc/nikki/run/country.mmdb
     wget -q https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/GeoLite2-ASN.mmdb -O files/etc/nikki/run/GeoLite2-ASN.mmdb
     #chmod 755 files/etc/nikki/run/*
-    # =========================================================
-    # 自动获取 Zashboard 最新版本并锁定
-    # =========================================================  
-    echo "📦 正在获取 Zashboard 最新版本..." 
-    ZASHBOARD_LATEST_URL="https://github.com/Zephyruso/zashboard/releases/latest/download/dist-cdn-fonts.zip"
-    # 使用 wget 获取最终重定向地址
-    ZASHBOARD_FINAL_URL=$(wget \
-        --spider \
-        --server-response \
-        "$ZASHBOARD_LATEST_URL" 2>&1 \
-        | grep -i "Location:" \
-        | tail -n 1 \
-        | sed 's/.*Location: //' \
-        | tr -d '\r')    
-    if [ -n "$ZASHBOARD_FINAL_URL" ]; then
-    
-        ZASHBOARD_VERSION=$(echo "$ZASHBOARD_FINAL_URL" \
-            | sed -n 's#.*/releases/download/\([^/]*\)/.*#\1#p')    
-    fi   
-    if [ -n "$ZASHBOARD_VERSION" ]; then
-        echo "🔖 Zashboard 最新版本：$ZASHBOARD_VERSION"
-        ZASHBOARD_URL="https://github.com/Zephyruso/zashboard/releases/download/${ZASHBOARD_VERSION}/dist-cdn-fonts.zip"
-        echo "📥 正在下载 Zashboard $ZASHBOARD_VERSION..."  
-        rm -f /tmp/zashboard.zip
-        if wget -q --show-progress \
-            "$ZASHBOARD_URL" \
-            -O /tmp/zashboard.zip; then
-            rm -rf files/etc/nikki/run/ui/*
-            mkdir -p files/etc/nikki/run/ui
-            if unzip -qo /tmp/zashboard.zip \
-                -d files/etc/nikki/run/ui/; then
-                echo "✅ Zashboard $ZASHBOARD_VERSION 预装完成！"
-            else
-                echo "❌ Zashboard 解压失败！"
-                rm -f /tmp/zashboard.zip
-                exit 1
-            fi
-            rm -f /tmp/zashboard.zip
-        else
-            echo "❌ Zashboard $ZASHBOARD_VERSION 下载失败！"
-            rm -f /tmp/zashboard.zip
-            exit 1
-        fi  
-    else
-        echo "❌ 无法获取 Zashboard 最新版本号！"
-        exit 1
-    fi
-    # =========================================================
-    # 设置文件权限
-    # =========================================================
+    # 下载 Zashboard
+    wget -q https://github.com/Zephyruso/zashboard/releases/latest/download/dist-cdn-fonts.zip -O /tmp/dist-cdn-fonts.zip
+    # 解压 Zashboard
+    rm -rf files/etc/nikki/run/ui/*
+    mkdir -p files/etc/nikki/run/ui
+    unzip -qo /tmp/dist-cdn-fonts.zip -d files/etc/nikki/run/ui/
+    # 删除临时文件
+    rm -f /tmp/dist-cdn-fonts.zip
+    # 设置目录和文件权限
     find files/etc/nikki/run -type d -exec chmod 755 {} \;
     find files/etc/nikki/run -type f -exec chmod 644 {} \;
-
-    echo "=========================================="
-    echo "✅ Nikki 预装完成"
-    echo "   GeoData    : MetaCubeX latest"
-    echo "   Zashboard  : $ZASHBOARD_VERSION"
-    echo "=========================================="
+    echo "✅ Nikki 预装 GeoData + Zashboard 完成！"
 else
     echo "⚪️ 未选择 luci-app-nikki"
 fi
