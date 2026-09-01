@@ -311,25 +311,34 @@ if echo "$PACKAGES" | grep -q "luci-app-nikki"; then
     wget -q https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/GeoLite2-ASN.mmdb -O files/etc/nikki/run/GeoLite2-ASN.mmdb
     #chmod 755 files/etc/nikki/run/*
     # =========================================================
-    # 自动获取 Zashboard 最新版本
-    # =========================================================
-    echo "📦 正在获取 Zashboard 最新版本..."
-    ZASHBOARD_VERSION=$(wget -qO- \
-        https://api.github.com/repos/Zephyruso/zashboard/releases/latest \
-        | grep '"tag_name":' \
-        | head -n 1 \
-        | sed -E 's/.*"([^"]+)".*/\1/')
+    # 自动获取 Zashboard 最新版本并锁定
+    # =========================================================  
+    echo "📦 正在获取 Zashboard 最新版本..." 
+    ZASHBOARD_LATEST_URL="https://github.com/Zephyruso/zashboard/releases/latest/download/dist-cdn-fonts.zip"
+    # 使用 wget 获取最终重定向地址
+    ZASHBOARD_FINAL_URL=$(wget \
+        --spider \
+        --server-response \
+        "$ZASHBOARD_LATEST_URL" 2>&1 \
+        | grep -i "Location:" \
+        | tail -n 1 \
+        | sed 's/.*Location: //' \
+        | tr -d '\r')    
+    if [ -n "$ZASHBOARD_FINAL_URL" ]; then
+    
+        ZASHBOARD_VERSION=$(echo "$ZASHBOARD_FINAL_URL" \
+            | sed -n 's#.*/releases/download/\([^/]*\)/.*#\1#p')    
+    fi   
     if [ -n "$ZASHBOARD_VERSION" ]; then
         echo "🔖 Zashboard 最新版本：$ZASHBOARD_VERSION"
-        # 锁定本次编译使用的版本
         ZASHBOARD_URL="https://github.com/Zephyruso/zashboard/releases/download/${ZASHBOARD_VERSION}/dist-cdn-fonts.zip"
-        echo "📥 正在下载 Zashboard $ZASHBOARD_VERSION..."
+        echo "📥 正在下载 Zashboard $ZASHBOARD_VERSION..."  
         rm -f /tmp/zashboard.zip
-        if wget -q --show-progress "$ZASHBOARD_URL" \
+        if wget -q --show-progress \
+            "$ZASHBOARD_URL" \
             -O /tmp/zashboard.zip; then
-            # 清空旧 UI 文件，避免残留旧版本
-            rm -rf files/etc/nikki/run/ui/*          
-            # 解压 Zashboard
+            rm -rf files/etc/nikki/run/ui/*
+            mkdir -p files/etc/nikki/run/ui
             if unzip -qo /tmp/zashboard.zip \
                 -d files/etc/nikki/run/ui/; then
                 echo "✅ Zashboard $ZASHBOARD_VERSION 预装完成！"
@@ -343,7 +352,7 @@ if echo "$PACKAGES" | grep -q "luci-app-nikki"; then
             echo "❌ Zashboard $ZASHBOARD_VERSION 下载失败！"
             rm -f /tmp/zashboard.zip
             exit 1
-        fi
+        fi  
     else
         echo "❌ 无法获取 Zashboard 最新版本号！"
         exit 1
