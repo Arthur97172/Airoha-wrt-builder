@@ -1,0 +1,752 @@
+```yaml
+name: 📦 Build LuCI Test1
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build LuCI Apps
+    runs-on: ubuntu-latest
+
+    env:
+      SDK_URL: https://downloads.immortalwrt.org/snapshots/targets/airoha/an7581/immortalwrt-sdk-airoha-an7581_gcc-14.4.0_musl.Linux-x86_64.tar.zst
+
+    steps:
+
+      # ============================================================
+      # 1. Checkout
+      # ============================================================
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      # ============================================================
+      # 2. Free disk space
+      # ============================================================
+      - name: 🧹 Free disk space
+        shell: bash
+        run: |
+          set -e
+
+          echo "============================================================"
+          echo "=== 清理磁盘空间 ==="
+          echo "============================================================"
+
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /opt/hostedtoolcache/CodeQL
+          sudo apt-get clean
+
+          df -h
+
+      # ============================================================
+      # 3. Download ImmortalWrt SDK
+      # ============================================================
+      - name: 📦 Download ImmortalWrt SDK
+        shell: bash
+        run: |
+          set -e
+
+          echo "============================================================"
+          echo "=== 下载 ImmortalWrt AN7581 SDK ==="
+          echo "============================================================"
+
+          wget -q --show-progress \
+            "$SDK_URL" \
+            -O sdk.tar.zst
+
+          echo "SDK 下载完成："
+          ls -lh sdk.tar.zst
+
+      # ============================================================
+      # 4. Extract SDK
+      # ============================================================
+      - name: 📂 Extract SDK
+        shell: bash
+        run: |
+          set -e
+
+          echo "============================================================"
+          echo "=== 解压 SDK ==="
+          echo "============================================================"
+
+          tar --use-compress-program=unzstd -xf sdk.tar.zst
+
+          SDK_DIR="$(find . -maxdepth 1 -type d -name 'immortalwrt-sdk-*' | head -n 1)"
+
+          if [ -z "$SDK_DIR" ]; then
+            echo "❌ 找不到 SDK 解压目录"
+            exit 1
+          fi
+
+          mv "$SDK_DIR" sdk
+
+          rm -f sdk.tar.zst
+
+          echo "SDK 目录："
+          ls -la sdk
+
+      # ============================================================
+      # 5. Update / install feeds
+      # ============================================================
+      - name: 🔄 Update ImmortalWrt feeds
+        working-directory: sdk
+        shell: bash
+        run: |
+          set -e
+
+          echo "============================================================"
+          echo "=== 更新 feeds ==="
+          echo "============================================================"
+
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+
+      # ============================================================
+      # 6. Clone custom LuCI packages
+      # ============================================================
+      - name: 📥 Clone custom LuCI packages
+        shell: bash
+        run: |
+          set -e
+
+          echo "============================================================"
+          echo "=== 获取自定义 LuCI 插件 ==="
+          echo "============================================================"
+
+          cd sdk
+
+          # ----------------------------------------------------------
+          # Airoha / Gemtek XR1710G
+          # ----------------------------------------------------------
+          git clone \
+            --depth=1 \
+            -b master \
+            https://github.com/naoki66/ImmortalWrt-for-Gemtek-XR1710G.git \
+            /tmp/xr1710g
+
+          mkdir -p package/custom
+
+          cp -a \
+            /tmp/xr1710g/luci-app-airoha-flowsense \
+            package/custom/
+
+          cp -a \
+            /tmp/xr1710g/luci-app-airoha-npu \
+            package/custom/
+
+          cp -a \
+            /tmp/xr1710g/luci-app-airoha-fancontrol \
+            package/custom/
+
+          # ----------------------------------------------------------
+          # MLO / W1700K Fan Control
+          # ----------------------------------------------------------
+          git clone \
+            --depth=1 \
+            -b xr1710g-6.18-integration \
+            https://github.com/YYH2913/openwrt.git \
+            /tmp/yyh-openwrt
+
+          cp -a \
+            /tmp/yyh-openwrt/luci-app-mlo \
+            package/custom/
+
+          cp -a \
+            /tmp/yyh-openwrt/luci-app-w1700k-fancontrol \
+            package/custom/
+
+          echo ""
+          echo ">>> 自定义插件："
+          find package/custom -maxdepth 2 -type f -name Makefile | sort
+
+      # ============================================================
+      # 7. Add TurboACC
+      # ============================================================
+      - name: 🚀 Add TurboACC
+        shell: bash
+        run: |
+          set -e
+
+          echo "============================================================"
+          echo "=== 添加 TurboACC ==="
+          echo "============================================================"
+
+          cd sdk
+
+          rm -rf /tmp/turboacc
+
+          git clone \
+            --depth=1 \
+            https://github.com/mufeng05/turboacc.git \
+            /tmp/turboacc
+
+          mkdir -p package/turboacc
+
+          # ----------------------------------------------------------
+          # 只加入 luci-app-turboacc
+          #
+          # 注意：
+          # 不执行 add_turboacc.sh
+          #
+          # 因为 SDK 不是完整 OpenWrt 源码树，
+          # add_turboacc.sh 会修改 kernel/firewall/nftables 等完整源码。
+          # ----------------------------------------------------------
+          cp -a \
+            /tmp/turboacc/custom/luci-app-turboacc \
+            package/turboacc/
+
+          echo ""
+          echo ">>> TurboACC Makefile："
+          sed -n '1,160p' \
+            package/turboacc/luci-app-turboacc/Makefile
+
+          echo ""
+          echo ">>> TurboACC 文件结构："
+          find package/turboacc/luci-app-turboacc \
+            -maxdepth 4 \
+            -type f \
+            | sort
+
+      # ============================================================
+      # 8. Prepare TurboACC Chinese translation
+      # ============================================================
+      - name: 🌐 Prepare TurboACC Chinese translation
+        shell: bash
+        run: |
+          set -e
+
+          echo "============================================================"
+          echo "=== 准备 TurboACC 中文语言包 ==="
+          echo "============================================================"
+
+          cd sdk
+
+          TURBOACC_DIR="package/turboacc/luci-app-turboacc"
+
+          mkdir -p "$TURBOACC_DIR/po/zh_Hans"
+
+          echo ""
+          echo ">>> 查找 TurboACC 已有中文 PO 文件："
+
+          find . \
+            -type f \
+            \( \
+              -name 'turboacc.po' \
+              -o -name '*turboacc*.po' \
+            \) \
+            2>/dev/null \
+            | sort \
+            | head -50
+
+          # ----------------------------------------------------------
+          # 优先使用 TurboACC 自带的中文翻译
+          # ----------------------------------------------------------
+          TURBOACC_PO="$(find /tmp/turboacc \
+            -type f \
+            \( \
+              -path '*/po/zh_Hans/*.po' \
+              -o -path '*/po/zh-cn/*.po' \
+            \) \
+            2>/dev/null \
+            | grep -Ei 'turboacc|fastpath' \
+            | head -n 1 || true)"
+
+          if [ -n "$TURBOACC_PO" ]; then
+            echo ">>> 找到 TurboACC 中文 PO："
+            echo "$TURBOACC_PO"
+
+            cp -f \
+              "$TURBOACC_PO" \
+              "$TURBOACC_DIR/po/zh_Hans/turboacc.po"
+
+          else
+            echo ">>> TurboACC 仓库没有找到中文 PO。"
+
+            # --------------------------------------------------------
+            # 尝试从 SDK / feeds 中寻找旧版 TurboACC 中文翻译
+            # --------------------------------------------------------
+            EXISTING_PO="$(find . \
+              -type f \
+              \( \
+                -path '*/po/zh_Hans/*.po' \
+                -o -path '*/po/zh-cn/*.po' \
+              \) \
+              2>/dev/null \
+              | grep -Ei 'turboacc|fastpath' \
+              | head -n 1 || true)"
+
+            if [ -n "$EXISTING_PO" ]; then
+              echo ">>> 找到 SDK / feeds 中已有 TurboACC 中文 PO："
+              echo "$EXISTING_PO"
+
+              cp -f \
+                "$EXISTING_PO" \
+                "$TURBOACC_DIR/po/zh_Hans/turboacc.po"
+
+            else
+              echo "⚠️ 没有找到现成 TurboACC 中文 PO。"
+
+              # ------------------------------------------------------
+              # 创建最小中文 PO。
+              #
+              # 这些字符串来自当前 TurboACC Makefile 的菜单选项。
+              # 即使部分页面字符串没有翻译，也可以正常生成
+              # luci-i18n-turboacc-zh-cn。
+              # ------------------------------------------------------
+              cat > "$TURBOACC_DIR/po/zh_Hans/turboacc.po" <<'EOF'
+msgid ""
+msgstr ""
+"Language: zh_Hans\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+msgid "FastPath Engine"
+msgstr "快速路径引擎"
+
+msgid "Use flow offloading"
+msgstr "使用流量分载"
+
+msgid "Use fast classifier"
+msgstr "使用快速分类器"
+
+msgid "Use shortcut-fe connection manager"
+msgstr "使用 Shortcut-FE 连接管理器"
+
+msgid "Use NSS ECM"
+msgstr "使用 NSS ECM"
+
+msgid "Enable BBR CCA"
+msgstr "启用 BBR 拥塞控制"
+
+msgid "Include fullcone NAT"
+msgstr "包含 FullCone NAT"
+
+msgid "LuCI support for FastPath (FW3 or FW4)"
+msgstr "FastPath LuCI 管理界面（FW3 / FW4）"
+EOF
+
+              echo ">>> 已创建最小 TurboACC 中文 PO"
+            fi
+          fi
+
+          echo ""
+          echo ">>> 最终 TurboACC PO："
+
+          if [ -f "$TURBOACC_DIR/po/zh_Hans/turboacc.po" ]; then
+            ls -lh "$TURBOACC_DIR/po/zh_Hans/turboacc.po"
+            sed -n '1,200p' \
+              "$TURBOACC_DIR/po/zh_Hans/turboacc.po"
+          else
+            echo "❌ TurboACC 中文 PO 创建失败"
+            exit 1
+          fi
+
+      # ============================================================
+      # 9. Configure packages
+      # ============================================================
+      - name: ⚙️ Configure packages
+        working-directory: sdk
+        shell: bash
+        run: |
+          set -e
+
+          echo "============================================================"
+          echo "=== 配置编译选项 ==="
+          echo "============================================================"
+
+          cat > .config <<'EOF'
+CONFIG_PACKAGE_luci-app-airoha-flowsense=m
+CONFIG_PACKAGE_luci-app-airoha-npu=m
+CONFIG_PACKAGE_luci-app-airoha-fancontrol=m
+CONFIG_PACKAGE_luci-app-mlo=m
+CONFIG_PACKAGE_luci-app-w1700k-fancontrol=m
+
+CONFIG_PACKAGE_luci-app-cpufreq=m
+
+CONFIG_PACKAGE_luci-app-turboacc=m
+
+CONFIG_PACKAGE_TURBOACC_INCLUDE_FLOW_OFFLOADING=y
+CONFIG_PACKAGE_TURBOACC_INCLUDE_BBR_CCA=y
+
+# 不使用 NSS ECM
+# 不使用 Fast Classifier
+# 不使用 Shortcut-FE
+# 不使用 FullCone NAT
+CONFIG_PACKAGE_TURBOACC_INCLUDE_NO_FASTPATH=n
+CONFIG_PACKAGE_TURBOACC_INCLUDE_FAST_CLASSIFIER=n
+CONFIG_PACKAGE_TURBOACC_INCLUDE_SHORTCUT_FE_CM=n
+CONFIG_PACKAGE_TURBOACC_INCLUDE_FULLCONE=n
+
+CONFIG_PACKAGE_libubox=m
+EOF
+
+          echo ""
+          echo ">>> 执行 defconfig："
+          make defconfig
+
+          echo ""
+          echo ">>> TurboACC 配置："
+          grep -E \
+            'TURBOACC|luci-app-turboacc' \
+            .config \
+            || true
+
+      # ============================================================
+      # 10. Show package information
+      # ============================================================
+      - name: 🔎 Verify package sources
+        working-directory: sdk
+        shell: bash
+        run: |
+          set -e
+
+          echo "============================================================"
+          echo "=== 检查插件源码 ==="
+          echo "============================================================"
+
+          echo ""
+          echo ">>> TurboACC："
+          find package/turboacc/luci-app-turboacc \
+            -maxdepth 4 \
+            -type f \
+            | sort
+
+          echo ""
+          echo ">>> TurboACC 中文 PO："
+          test -f \
+            package/turboacc/luci-app-turboacc/po/zh_Hans/turboacc.po
+
+          echo ""
+          echo ">>> LuCI Makefile："
+          test -f \
+            package/turboacc/luci-app-turboacc/Makefile
+
+      # ============================================================
+      # 11. Compile packages
+      # ============================================================
+      - name: 🔨 Compile LuCI packages
+        working-directory: sdk
+        shell: bash
+        run: |
+          set -e
+
+          echo "============================================================"
+          echo "=== 开始编译 LuCI APK ==="
+          echo "============================================================"
+
+          PACKAGES="
+          luci-app-airoha-flowsense
+          luci-app-airoha-npu
+          luci-app-airoha-fancontrol
+          luci-app-mlo
+          luci-app-w1700k-fancontrol
+          luci-app-cpufreq
+          luci-app-turboacc
+          libubox
+          "
+
+          for pkg in $PACKAGES; do
+            echo ""
+            echo "============================================================"
+            echo "=== 编译 $pkg ==="
+            echo "============================================================"
+
+            if make "package/$pkg/compile" V=s -j"$(nproc)"; then
+              echo "✅ $pkg 编译成功"
+            else
+              echo "⚠️ $pkg 并行编译失败，尝试单线程..."
+
+              make "package/$pkg/compile" V=s -j1
+
+              echo "✅ $pkg 单线程编译成功"
+            fi
+          done
+
+      # ============================================================
+      # 12. Explicitly compile TurboACC i18n
+      # ============================================================
+      - name: 🌐 Compile TurboACC Chinese i18n
+        working-directory: sdk
+        shell: bash
+        run: |
+          set -e
+
+          echo "============================================================"
+          echo "=== 编译 TurboACC 中文语言包 ==="
+          echo "============================================================"
+
+          # 先尝试 LuCI 标准 i18n 编译目标
+          make \
+            package/turboacc/luci-app-turboacc/i18n/compile \
+            V=s \
+            -j1 \
+            || true
+
+          # 再执行 luci.mk 通用 i18n 目标
+          make \
+            package/turboacc/luci-app-turboacc/compile \
+            V=s \
+            -j1
+
+          echo ""
+          echo ">>> 查找 TurboACC 相关 APK："
+
+          find bin \
+            -type f \
+            -name '*turboacc*.apk' \
+            -print \
+            | sort
+
+      # ============================================================
+      # 13. Verify TurboACC APKs
+      # ============================================================
+      - name: ✅ Verify TurboACC APKs
+        working-directory: sdk
+        shell: bash
+        run: |
+          set -e
+
+          echo "============================================================"
+          echo "=== 验证 TurboACC APK ==="
+          echo "============================================================"
+
+          TURBOACC_APP="$(find bin \
+            -type f \
+            -name 'luci-app-turboacc*.apk' \
+            | head -n 1 || true)"
+
+          TURBOACC_I18N="$(find bin \
+            -type f \
+            -name 'luci-i18n-turboacc-zh-cn*.apk' \
+            | head -n 1 || true)"
+
+          echo ""
+          echo "TurboACC 主程序："
+          echo "${TURBOACC_APP:-未找到}"
+
+          echo ""
+          echo "TurboACC 中文语言包："
+          echo "${TURBOACC_I18N:-未找到}"
+
+          if [ -z "$TURBOACC_APP" ]; then
+            echo ""
+            echo "❌ 没有生成 luci-app-turboacc APK"
+            exit 1
+          fi
+
+          if [ -z "$TURBOACC_I18N" ]; then
+            echo ""
+            echo "❌ 没有生成 luci-i18n-turboacc-zh-cn APK"
+            echo ""
+            echo "请检查上面的 PO / LuCI i18n 编译日志。"
+            exit 1
+          fi
+
+          echo ""
+          echo "✅ TurboACC 主程序和中文语言包均已生成"
+
+      # ============================================================
+      # 14. Collect APKs
+      # ============================================================
+      - name: 📦 Collect APKs
+        shell: bash
+        run: |
+          set -e
+
+          echo "============================================================"
+          echo ">>> 复制目标 APK 到 apps/"
+          echo "============================================================"
+
+          rm -rf apps
+          mkdir -p apps
+
+          find sdk/bin \
+            -type f \
+            -name '*.apk' \
+            -print0 |
+          while IFS= read -r -d '' f; do
+
+            base="$(basename "$f")"
+
+            case "$base" in
+
+              luci-app-airoha-flowsense*|\
+              luci-i18n-airoha-flowsense-zh-cn*)
+                cp -v "$f" apps/
+                ;;
+
+              luci-app-airoha-npu*|\
+              luci-i18n-airoha-npu-zh-cn*)
+                cp -v "$f" apps/
+                ;;
+
+              luci-app-airoha-fancontrol*|\
+              luci-i18n-airoha-fancontrol-zh-cn*)
+                cp -v "$f" apps/
+                ;;
+
+              luci-app-w1700k-fancontrol*|\
+              luci-i18n-w1700k-fancontrol*)
+                cp -v "$f" apps/
+                ;;
+
+              luci-app-mlo*|\
+              luci-i18n-mlo-zh-cn*)
+                cp -v "$f" apps/
+                ;;
+
+              cpufreq*|\
+              luci-app-cpufreq*|\
+              luci-i18n-cpufreq-zh-cn*)
+                cp -v "$f" apps/
+                ;;
+
+              luci-app-turboacc*|\
+              luci-i18n-turboacc-zh-cn*)
+                cp -v "$f" apps/
+                ;;
+
+              libubox*)
+                cp -v "$f" apps/
+                ;;
+
+            esac
+          done
+
+          echo ""
+          echo "============================================================"
+          echo "=== 最终已放置到 apps/ 的文件 ==="
+          echo "============================================================"
+
+          ls -lah apps
+
+          echo ""
+          echo "APK 总数量："
+          find apps \
+            -maxdepth 1 \
+            -type f \
+            -name '*.apk' \
+            | wc -l
+
+      # ============================================================
+      # 15. Final verification
+      # ============================================================
+      - name: 🔍 Final APK verification
+        shell: bash
+        run: |
+          set -e
+
+          echo "============================================================"
+          echo "=== 最终 APK 检查 ==="
+          echo "============================================================"
+
+          echo ""
+          echo ">>> TurboACC 主程序："
+          ls -lh apps/luci-app-turboacc*.apk
+
+          echo ""
+          echo ">>> TurboACC 中文语言包："
+          ls -lh apps/luci-i18n-turboacc-zh-cn*.apk
+
+          echo ""
+          echo ">>> CPUFreq："
+          ls -lh apps/cpufreq*.apk
+          ls -lh apps/luci-app-cpufreq*.apk
+          ls -lh apps/luci-i18n-cpufreq-zh-cn*.apk
+
+          echo ""
+          echo ">>> 最终 APK 数量："
+          find apps \
+            -maxdepth 1 \
+            -type f \
+            -name '*.apk' \
+            | wc -l
+
+      # ============================================================
+      # 16. Upload artifact
+      # ============================================================
+      - name: 📤 Upload APK artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: luci-apps-immortalwrt-an7581
+          path: |
+            apps/luci-app-airoha-flowsense*.apk
+            apps/luci-i18n-airoha-flowsense-zh-cn*.apk
+
+            apps/luci-app-airoha-npu*.apk
+            apps/luci-i18n-airoha-npu-zh-cn*.apk
+
+            apps/luci-app-w1700k-fancontrol*.apk
+            apps/luci-i18n-w1700k-fancontrol*.apk
+
+            apps/luci-app-airoha-fancontrol*.apk
+            apps/luci-i18n-airoha-fancontrol*.apk
+
+            apps/cpufreq*.apk
+            apps/luci-app-cpufreq*.apk
+            apps/luci-i18n-cpufreq-zh-cn*.apk
+
+            apps/luci-app-mlo*.apk
+            apps/luci-i18n-mlo-zh-cn*.apk
+
+            apps/libubox*.apk
+
+            apps/luci-app-turboacc*.apk
+            apps/luci-i18n-turboacc-zh-cn*.apk
+
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 6
+
+      # ============================================================
+      # 17. Commit and push APKs
+      # ============================================================
+      - name: 🚀 Commit and push APKs
+        shell: bash
+        run: |
+          set -e
+
+          echo ""
+          echo "============================================================"
+          echo "=== 提交并推送编译结果到 apps/ 目录 ==="
+          echo "============================================================"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add apps/
+
+          if git diff --staged --quiet; then
+            echo ""
+            echo "没有需要提交的变更"
+            echo "apps/ 目录没有变化"
+          else
+            git commit \
+              -m "build: update compiled apk files in apps/ ($(date +%Y%m%d))"
+
+            echo ""
+            echo ">>> 获取远程最新代码..."
+            git fetch origin
+
+            echo ""
+            echo ">>> 尝试 rebase..."
+            git rebase origin/main \
+              || git rebase origin/main
+
+            echo ""
+            echo ">>> 推送 APK..."
+            git push \
+              origin \
+              "HEAD:main"
+
+            echo ""
+            echo "✅ 成功将编译后的 APK 推送到仓库"
+          fi
+```
