@@ -82,8 +82,8 @@ apply_ap_common() {
 	local iface="$1"
 
 	# The board's 16-airoha-wifi-tuning uci-default also runs before mt7996
-	# exists on a clean boot.  Carry its two client-stability settings into
-	# this post-kmod policy so they cannot be silently skipped.
+	# exists on a clean boot. Carry the board's common AP/client-stability
+	# settings into this post-kmod policy so they cannot be silently skipped.
 	uci -q set wireless."$iface".uapsd='0'
 	uci -q set wireless."$iface".disassoc_low_ack='0'
 	uci -q set wireless."$iface".ieee80211k='1'
@@ -199,9 +199,9 @@ while :; do
 		wifi config >/dev/null 2>&1 || true
 	fi
 
-	# Fail closed even if mt7996 discovery is only partly complete.  A newly
-	# discovered 6 GHz OWE AP must never remain enabled while another band is
-	# still missing and the full policy is waiting to retry.
+	# Fail closed even if mt7996 discovery is only partly complete. A newly
+	# discovered 6 GHz interface must remain disabled until the full wireless
+	# policy has been applied.
 	safeguard_discovered_6g
 
 	if wireless_is_complete; then
