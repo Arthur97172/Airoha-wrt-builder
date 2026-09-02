@@ -162,7 +162,7 @@ apply_policy() {
 			uci -q set wireless."$iface".key='12345678'
 			# 6 GHz SAE requires a non-empty key.
 			# The AP uses a fixed key here, so keep the interface enabled.
-			uci -q set wireless."$iface".disabled='0'
+			#uci -q set wireless."$iface".disabled='0'
 			# 删除 Mesh 相关配置
 			delete_if_present wireless."$iface".mesh_id
 			delete_if_present wireless."$iface".mesh_fwding
