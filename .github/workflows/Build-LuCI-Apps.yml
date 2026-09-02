@@ -145,7 +145,7 @@ jobs:
               luci-app-airoha-npu*|luci-i18n-airoha-npu-zh-cn*|\
               luci-app-w1700k-fancontrol*|luci-i18n-w1700k-fancontrol*|\
               luci-app-airoha-fancontrol*|luci-i18n-airoha-fancontrol*|\
-              cpufreq**|luci-app-cpufreq*|luci-i18n-cpufreq-zh-cn*|\
+              cpufreq*|luci-app-cpufreq*|luci-i18n-cpufreq-zh-cn*|\
               libubox*|\
               luci-app-mlo*|luci-i18n-mlo-zh-cn*)
                 cp -v "$f" apps/
