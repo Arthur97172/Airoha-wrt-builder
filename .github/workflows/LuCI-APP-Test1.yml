@@ -361,41 +361,41 @@ EOF
           echo "============================================================"
 
           cat > .config <<'EOF'
-CONFIG_PACKAGE_luci-app-airoha-flowsense=m
-CONFIG_PACKAGE_luci-app-airoha-npu=m
-CONFIG_PACKAGE_luci-app-airoha-fancontrol=m
-CONFIG_PACKAGE_luci-app-mlo=m
-CONFIG_PACKAGE_luci-app-w1700k-fancontrol=m
-
-CONFIG_PACKAGE_luci-app-cpufreq=m
-
-CONFIG_PACKAGE_luci-app-turboacc=m
-
-CONFIG_PACKAGE_TURBOACC_INCLUDE_FLOW_OFFLOADING=y
-CONFIG_PACKAGE_TURBOACC_INCLUDE_BBR_CCA=y
-
-# 不使用 NSS ECM
-# 不使用 Fast Classifier
-# 不使用 Shortcut-FE
-# 不使用 FullCone NAT
-CONFIG_PACKAGE_TURBOACC_INCLUDE_NO_FASTPATH=n
-CONFIG_PACKAGE_TURBOACC_INCLUDE_FAST_CLASSIFIER=n
-CONFIG_PACKAGE_TURBOACC_INCLUDE_SHORTCUT_FE_CM=n
-CONFIG_PACKAGE_TURBOACC_INCLUDE_FULLCONE=n
-
-CONFIG_PACKAGE_libubox=m
-EOF
-
-          echo ""
-          echo ">>> 执行 defconfig："
-          make defconfig
-
-          echo ""
-          echo ">>> TurboACC 配置："
-          grep -E \
-            'TURBOACC|luci-app-turboacc' \
-            .config \
-            || true
+          CONFIG_PACKAGE_luci-app-airoha-flowsense=m
+          CONFIG_PACKAGE_luci-app-airoha-npu=m
+          CONFIG_PACKAGE_luci-app-airoha-fancontrol=m
+          CONFIG_PACKAGE_luci-app-mlo=m
+          CONFIG_PACKAGE_luci-app-w1700k-fancontrol=m
+          
+          CONFIG_PACKAGE_luci-app-cpufreq=m
+          
+          CONFIG_PACKAGE_luci-app-turboacc=m
+          
+          CONFIG_PACKAGE_TURBOACC_INCLUDE_FLOW_OFFLOADING=y
+          CONFIG_PACKAGE_TURBOACC_INCLUDE_BBR_CCA=y
+          
+          # 不使用 NSS ECM
+          # 不使用 Fast Classifier
+          # 不使用 Shortcut-FE
+          # 不使用 FullCone NAT
+          CONFIG_PACKAGE_TURBOACC_INCLUDE_NO_FASTPATH=n
+          CONFIG_PACKAGE_TURBOACC_INCLUDE_FAST_CLASSIFIER=n
+          CONFIG_PACKAGE_TURBOACC_INCLUDE_SHORTCUT_FE_CM=n
+          CONFIG_PACKAGE_TURBOACC_INCLUDE_FULLCONE=n
+          
+          CONFIG_PACKAGE_libubox=m
+          EOF
+          
+                    echo ""
+                    echo ">>> 执行 defconfig："
+                    make defconfig
+          
+                    echo ""
+                    echo ">>> TurboACC 配置："
+                    grep -E \
+                      'TURBOACC|luci-app-turboacc' \
+                      .config \
+                      || true
 
       # ============================================================
       # 10. Show package information
