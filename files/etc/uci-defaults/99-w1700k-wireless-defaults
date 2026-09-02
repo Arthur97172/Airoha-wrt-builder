@@ -58,7 +58,9 @@ safeguard_discovered_6g() {
 		for iface in $(ifaces_for_radio "$radio"); do
 			current="$(uci -q get wireless."$iface".disabled 2>/dev/null || true)"
 			if [ "$current" != '1' ]; then
-				uci -q set wireless."$iface".disabled='0'
+				# Keep 6 GHz disabled until the complete wireless policy
+				# has been applied.
+				uci -q set wireless."$iface".disabled='1'
 				changed=1
 			fi
 
