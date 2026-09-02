@@ -298,54 +298,54 @@ jobs:
               # luci-i18n-turboacc-zh-cn。
               # ------------------------------------------------------
               cat > "$TURBOACC_DIR/po/zh_Hans/turboacc.po" <<'EOF'
-msgid ""
-msgstr ""
-"Language: zh_Hans\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
-
-msgid "FastPath Engine"
-msgstr "快速路径引擎"
-
-msgid "Use flow offloading"
-msgstr "使用流量分载"
-
-msgid "Use fast classifier"
-msgstr "使用快速分类器"
-
-msgid "Use shortcut-fe connection manager"
-msgstr "使用 Shortcut-FE 连接管理器"
-
-msgid "Use NSS ECM"
-msgstr "使用 NSS ECM"
-
-msgid "Enable BBR CCA"
-msgstr "启用 BBR 拥塞控制"
-
-msgid "Include fullcone NAT"
-msgstr "包含 FullCone NAT"
-
-msgid "LuCI support for FastPath (FW3 or FW4)"
-msgstr "FastPath LuCI 管理界面（FW3 / FW4）"
-EOF
-
-              echo ">>> 已创建最小 TurboACC 中文 PO"
-            fi
-          fi
-
-          echo ""
-          echo ">>> 最终 TurboACC PO："
-
-          if [ -f "$TURBOACC_DIR/po/zh_Hans/turboacc.po" ]; then
-            ls -lh "$TURBOACC_DIR/po/zh_Hans/turboacc.po"
-            sed -n '1,200p' \
-              "$TURBOACC_DIR/po/zh_Hans/turboacc.po"
-          else
-            echo "❌ TurboACC 中文 PO 创建失败"
-            exit 1
-          fi
+            msgid ""
+            msgstr ""
+            "Language: zh_Hans\n"
+            "MIME-Version: 1.0\n"
+            "Content-Type: text/plain; charset=UTF-8\n"
+            "Content-Transfer-Encoding: 8bit\n"
+            "Plural-Forms: nplurals=1; plural=0;\n"
+            
+            msgid "FastPath Engine"
+            msgstr "快速路径引擎"
+            
+            msgid "Use flow offloading"
+            msgstr "使用流量分载"
+            
+            msgid "Use fast classifier"
+            msgstr "使用快速分类器"
+            
+            msgid "Use shortcut-fe connection manager"
+            msgstr "使用 Shortcut-FE 连接管理器"
+            
+            msgid "Use NSS ECM"
+            msgstr "使用 NSS ECM"
+            
+            msgid "Enable BBR CCA"
+            msgstr "启用 BBR 拥塞控制"
+            
+            msgid "Include fullcone NAT"
+            msgstr "包含 FullCone NAT"
+            
+            msgid "LuCI support for FastPath (FW3 or FW4)"
+            msgstr "FastPath LuCI 管理界面（FW3 / FW4）"
+            EOF
+            
+                          echo ">>> 已创建最小 TurboACC 中文 PO"
+                        fi
+                      fi
+            
+                      echo ""
+                      echo ">>> 最终 TurboACC PO："
+            
+                      if [ -f "$TURBOACC_DIR/po/zh_Hans/turboacc.po" ]; then
+                        ls -lh "$TURBOACC_DIR/po/zh_Hans/turboacc.po"
+                        sed -n '1,200p' \
+                          "$TURBOACC_DIR/po/zh_Hans/turboacc.po"
+                      else
+                        echo "❌ TurboACC 中文 PO 创建失败"
+                        exit 1
+                      fi
 
       # ============================================================
       # 9. Configure packages
