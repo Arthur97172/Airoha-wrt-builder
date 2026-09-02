@@ -162,6 +162,7 @@ apply_policy() {
 			uci -q set wireless."$iface".ssid='W1700K'
 			uci -q set wireless."$iface".encryption='sae'
 			uci -q set wireless."$iface".key='12345678'
+			uci -q set wireless."$iface".ieee80211w='2'
 
 			# 删除 Mesh 相关配置
 			delete_if_present wireless."$iface".mesh_id
