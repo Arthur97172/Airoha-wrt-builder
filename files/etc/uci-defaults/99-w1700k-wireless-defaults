@@ -162,9 +162,12 @@ apply_policy() {
 			uci -q set wireless."$iface".ssid='W1700K'
 			uci -q set wireless."$iface".encryption='sae'
 			uci -q set wireless."$iface".key='12345678'
-			# 6 GHz SAE requires a non-empty key.
-			# The AP uses a fixed key here, so keep the interface enabled.
-			#uci -q set wireless."$iface".disabled='0'
+			# Enable 802.11r for fast roaming between 5 GHz and 6 GHz.
+			# Keep the same mobility domain and FT settings as 5 GHz.
+			uci -q set wireless."$iface".ieee80211r='1'
+			uci -q set wireless."$iface".mobility_domain='6616'
+			uci -q set wireless."$iface".ft_over_ds='0'
+			uci -q set wireless."$iface".ft_psk_generate_local='1'
 			# 删除 Mesh 相关配置
 			delete_if_present wireless."$iface".mesh_id
 			delete_if_present wireless."$iface".mesh_fwding
