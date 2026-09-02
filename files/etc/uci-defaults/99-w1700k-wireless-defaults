@@ -157,7 +157,7 @@ apply_policy() {
 			#uci -q set wireless."$iface".mode='mesh'
 			uci -q set wireless."$iface".mode='ap'
 			uci -q set wireless."$iface".network='lan'
-			uci -q set wireless."$iface".mesh_id='W1700K'
+			uci -q set wireless."$iface".ssid='W1700K'
 			uci -q set wireless."$iface".encryption='sae'
 			uci -q set wireless."$iface".key='12345678'
 			# 6 GHz SAE cannot start with an empty key. Keep the reviewed Mesh
