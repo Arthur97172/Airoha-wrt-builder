@@ -27,7 +27,7 @@ PACKAGES=""
 
 # [核心系统]
 PACKAGES="$PACKAGES base-files uci ubus dropbear logd mtd bash htop curl wget ca-bundle ca-certificates"
-PACKAGES="$PACKAGES -dnsmasq dnsmasq-full firewall4 nftables kmod-nft-offload fitblk"
+PACKAGES="$PACKAGES -dnsmasq dnsmasq-full firewall4 nftables kmod-nft-offload fitblk nano"
 PACKAGES="$PACKAGES ip-full ipset iw ppp ppp-mod-pppoe luci-proto-ppp luci-proto-ipv6"
 PACKAGES="$PACKAGES -odhcpd odhcpd-ipv6only odhcp6c"
 PACKAGES="$PACKAGES -wpad-basic-mbedtls -wpad-mbedtls wpad-openssl -libustream-mbedtls -libustream-wolfssl libustream-openssl"
