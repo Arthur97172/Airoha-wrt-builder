@@ -129,7 +129,7 @@ apply_policy() {
 		uci -q set wireless."$radio".background_radar='1'
 		for iface in $(ifaces_for_radio "$radio"); do
 			[ "$(uci -q get wireless."$iface".mode 2>/dev/null || true)" = 'ap' ] || continue
-			uci -q set wireless."$iface".ssid='W1700K'
+			uci -q set wireless."$iface".ssid='W1700K_5G'
 			uci -q set wireless."$iface".encryption='sae'
 			uci -q set wireless."$iface".key='12345678'
 			apply_ap_common "$iface"
@@ -159,7 +159,7 @@ apply_policy() {
 			#uci -q set wireless."$iface".mode='mesh'
 			uci -q set wireless."$iface".mode='ap'
 			uci -q set wireless."$iface".network='lan'
-			uci -q set wireless."$iface".ssid='W1700K'
+			uci -q set wireless."$iface".ssid='W1700K_6G'
 			uci -q set wireless."$iface".encryption='sae'
 			uci -q set wireless."$iface".key='12345678'
 			uci -q set wireless."$iface".ieee80211w='2'
