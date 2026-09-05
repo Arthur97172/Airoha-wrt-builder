@@ -21,7 +21,7 @@ CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-timecontrol luci-i18n-timecontrol-zh-
 CUSTOM_PACKAGES="$CUSTOM_PACKAGES watchdog luci-app-watchdog luci-i18n-watchdog-zh-cn"
 
 # adguardhome广告拦截 (adguardhome)
-CUSTOM_PACKAGES="$CUSTOM_PACKAGES adguardhome luci-app-adguardhome"
+CUSTOM_PACKAGES="$CUSTOM_PACKAGES adguardhome luci-app-adguardhome luci-i18n-adguardhome-zh-cn"
 
 #晶晨宝盒 (amlogic)
 #CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-amlogic luci-i18n-amlogic-zh-cn"
