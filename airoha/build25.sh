@@ -30,7 +30,7 @@ PACKAGES="$PACKAGES base-files uci ubus dropbear logd mtd bash htop curl wget ca
 PACKAGES="$PACKAGES -dnsmasq dnsmasq-full firewall4 nftables kmod-nft-offload fitblk nano"
 PACKAGES="$PACKAGES ip-full ipset iw ppp ppp-mod-pppoe luci-proto-ppp luci-proto-ipv6"
 PACKAGES="$PACKAGES -odhcpd odhcpd-ipv6only odhcp6c"
-PACKAGES="$PACKAGES -wpad-basic-mbedtls -wpad-mbedtls wpad-openssl -libustream-mbedtls -libustream-wolfssl libustream-openssl"
+PACKAGES="$PACKAGES -wpad-basic-mbedtls -wpad-mbedtls wpad-mesh-openssl -libustream-mbedtls -libustream-wolfssl libustream-openssl"
 # [无线驱动]
 PACKAGES="$PACKAGES kmod-cfg80211 kmod-mac80211 kmod-mt76-connac kmod-mt76-core kmod-hwmon-nct7802 rtl826x-firmware"
 PACKAGES="$PACKAGES airoha-en7581-mt7996-npu-firmware"
