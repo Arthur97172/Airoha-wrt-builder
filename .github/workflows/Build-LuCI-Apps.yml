@@ -194,7 +194,10 @@ jobs:
           if git diff --staged --quiet; then
             echo "没有需要提交的变更 (apps/ 目录没有变化)"
           else
+            echo "📦 检测到以下文件变更："
+            git diff --staged --stat
             git commit -m "build: update compiled apk files in apps/ ($(date +%Y%m%d))"
+            # 拉取最新代码并合并
             git fetch origin
             git rebase origin/${{ github.ref_name }} || git rebase origin/main
             git push origin HEAD:${{ github.ref_name }}
