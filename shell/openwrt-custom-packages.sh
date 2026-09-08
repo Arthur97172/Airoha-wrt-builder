@@ -20,6 +20,9 @@ CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-timecontrol luci-i18n-timecontrol-zh-
 #watchdog看门狗
 CUSTOM_PACKAGES="$CUSTOM_PACKAGES watchdog luci-app-watchdog luci-i18n-watchdog-zh-cn"
 
+#wireguard VPN控制面板
+CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-wireguard luci-i18n-wireguard-zh-cn"
+
 # adguardhome广告拦截 (adguardhome)
 #CUSTOM_PACKAGES="$CUSTOM_PACKAGES adguardhome luci-app-adguardhome luci-i18n-adguardhome-zh-cn"
 
