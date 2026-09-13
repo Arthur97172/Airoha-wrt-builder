@@ -332,6 +332,7 @@ else
     echo "⚪️ 未选择 luci-app-nikki"
 fi
 
+
 # 若构建 luci-app-netspeedtest，则自动预装最新稳定版 Ookla Speedtest CLI
 if echo "$PACKAGES" | grep -q "luci-app-netspeedtest"; then
     echo "🚀 检测到 luci-app-netspeedtest，开始下载最新稳定版 Ookla Speedtest CLI..."
@@ -350,8 +351,7 @@ if echo "$PACKAGES" | grep -q "luci-app-netspeedtest"; then
         | sed -n '/Download for Linux/,/<\/div>/p' \
         | sed -En "s|.*<a href=\"([^\"]+)\"[^>]*>${OOKLA_ARCH}</a>.*|\1|p" \
         | head -n 1)
-
-    # 如果没有找到 URL，尝试兼容 HTML 中存在其他属性的情况
+    # 如果没有找到 URL，尝试兼容其他 HTML 格式
     if [ -z "$OOKLA_URL" ]; then
         OOKLA_URL=$(wget -qO- --no-check-certificate \
             "https://www.speedtest.net/apps/cli" \
@@ -405,14 +405,19 @@ if echo "$PACKAGES" | grep -q "luci-app-netspeedtest"; then
         exit 1
     fi
     chmod 755 /tmp/ookla-speedtest/speedtest
-    # ------------------------------------------------------------
-    # 验证 Ookla CLI
-    # ------------------------------------------------------------
-    echo "🔍 验证 Ookla Speedtest CLI..."
-    if ! /tmp/ookla-speedtest/speedtest --version; then
-        echo "❌ Ookla Speedtest CLI 验证失败！"
-        rm -rf /tmp/ookla-speedtest
-        exit 1
+    echo "🔍 检查 Ookla Speedtest CLI 文件..."
+    if command -v file >/dev/null 2>&1; then
+        file /tmp/ookla-speedtest/speedtest
+    fi
+    # 使用 readelf 检查 ELF Machine
+    if command -v readelf >/dev/null 2>&1; then
+        if ! readelf -h /tmp/ookla-speedtest/speedtest | grep -q "AArch64"; then
+            echo "❌ Ookla Speedtest CLI 不是 AArch64 ELF 文件！"
+            readelf -h /tmp/ookla-speedtest/speedtest
+            rm -rf /tmp/ookla-speedtest
+            exit 1
+        fi
+        echo "✅ 已确认 Ookla Speedtest CLI 为 AArch64 架构"
     fi
     # ------------------------------------------------------------
     # 安装到 luci-app-netspeedtest 实际使用的路径
@@ -422,23 +427,24 @@ if echo "$PACKAGES" | grep -q "luci-app-netspeedtest"; then
         files/usr/libexec/netspeedtest/speedtest
     chmod 755 \
         files/usr/libexec/netspeedtest/speedtest
-    # ------------------------------------------------------------
-    # 最终验证
-    # ------------------------------------------------------------
-    echo "🔍 验证预装文件..."
-    if ! files/usr/libexec/netspeedtest/speedtest --version; then
-        echo "❌ 预装的 Ookla Speedtest CLI 验证失败！"
+    # 检查最终文件
+    if [ ! -x files/usr/libexec/netspeedtest/speedtest ]; then
+        echo "❌ Ookla Speedtest CLI 安装失败！"
         rm -rf /tmp/ookla-speedtest
         exit 1
     fi
-    # 清理临时文件
-    rm -rf /tmp/ookla-speedtest
     echo "✅ 最新稳定版 Ookla Speedtest CLI 预装完成！"
     echo "   ARCH : ${OOKLA_ARCH}"
     echo "   PATH : files/usr/libexec/netspeedtest/speedtest"
+    if command -v file >/dev/null 2>&1; then
+        file files/usr/libexec/netspeedtest/speedtest
+    fi
+    # 清理临时文件
+    rm -rf /tmp/ookla-speedtest
 else
     echo "⚪️ 未选择 luci-app-netspeedtest"
 fi
+
 
 # 构建镜像
 echo "$(date '+%Y-%m-%d %H:%M:%S') - 开始构建......打印所有包名"
