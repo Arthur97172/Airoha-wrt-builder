@@ -332,70 +332,110 @@ else
     echo "⚪️ 未选择 luci-app-nikki"
 fi
 
-# 若构建 luci-app-netspeedtest，则预装 Ookla Speedtest CLI
+# 若构建 luci-app-netspeedtest，则自动预装最新稳定版 Ookla Speedtest CLI
 if echo "$PACKAGES" | grep -q "luci-app-netspeedtest"; then
-    echo "🚀 检测到 luci-app-netspeedtest，开始预装 Ookla Speedtest CLI..."
-    # 创建目录
+    echo "🚀 检测到 luci-app-netspeedtest，开始下载最新稳定版 Ookla Speedtest CLI..."
+    # 创建目标目录
     mkdir -p files/usr/libexec/netspeedtest
-    # Ookla Speedtest CLI 版本
-    OOKLA_VERSION="1.2.0"
-    # 根据 OpenWrt 架构选择 Ookla CLI
-    case "$ARCH" in
-        aarch64|aarch64_cortex-a53|aarch64_generic)
-            OOKLA_ARCH="aarch64"
-            ;;
-        x86_64)
-            OOKLA_ARCH="x86_64"
-            ;;
-        i386)
-            OOKLA_ARCH="i386"
-            ;;
-        armhf)
-            OOKLA_ARCH="armhf"
-            ;;
-        armel)
-            OOKLA_ARCH="armel"
-            ;;
-        *)
-            echo "❌ 不支持的架构: $ARCH"
-            exit 1
-            ;;
-    esac
-    # Ookla 官方下载地址
-    OOKLA_URL="https://install.speedtest.net/app/cli/ookla-speedtest-${OOKLA_VERSION}-linux-${OOKLA_ARCH}.tgz"
-    echo "📦 Ookla Version: ${OOKLA_VERSION}"
-    echo "🏗️ OpenWrt ARCH: ${ARCH}"
-    echo "🎯 Ookla ARCH: ${OOKLA_ARCH}"
-    echo "🔗 Download: ${OOKLA_URL}"
-    # 下载到临时目录
+    # Airoha / AN7581 使用 ARM64
+    OOKLA_ARCH="aarch64"
+    # 创建临时目录
     rm -rf /tmp/ookla-speedtest
     mkdir -p /tmp/ookla-speedtest
+    # ------------------------------------------------------------
+    # 从 Ookla 官方 CLI 页面获取最新稳定版 aarch64 下载地址
+    # ------------------------------------------------------------
+    OOKLA_URL=$(wget -qO- --no-check-certificate \
+        "https://www.speedtest.net/apps/cli" \
+        | sed -n '/Download for Linux/,/<\/div>/p' \
+        | sed -En "s|.*<a href=\"([^\"]+)\"[^>]*>${OOKLA_ARCH}</a>.*|\1|p" \
+        | head -n 1)
+
+    # 如果没有找到 URL，尝试兼容 HTML 中存在其他属性的情况
+    if [ -z "$OOKLA_URL" ]; then
+        OOKLA_URL=$(wget -qO- --no-check-certificate \
+            "https://www.speedtest.net/apps/cli" \
+            | grep -oE 'https?://[^"]+linux-aarch64[^"]+\.tgz' \
+            | head -n 1)
+    fi
+    # 检查下载地址
+    if [ -z "$OOKLA_URL" ]; then
+        echo "❌ 无法从 Ookla 官方页面获取最新稳定版 aarch64 下载地址！"
+        rm -rf /tmp/ookla-speedtest
+        exit 1
+    fi
+    # 如果官方页面返回相对路径，则补充官方域名
+    case "$OOKLA_URL" in
+        http://*|https://*)
+            ;;
+        /*)
+            OOKLA_URL="https://www.speedtest.net${OOKLA_URL}"
+            ;;
+        *)
+            OOKLA_URL="https://www.speedtest.net/${OOKLA_URL}"
+            ;;
+    esac
+    echo "🎯 Ookla ARCH: ${OOKLA_ARCH}"
+    echo "🔗 Download: ${OOKLA_URL}"
+    # ------------------------------------------------------------
+    # 下载 Ookla Speedtest CLI
+    # ------------------------------------------------------------
     wget -q --no-check-certificate \
         "$OOKLA_URL" \
         -O /tmp/ookla-speedtest/ookla-speedtest.tgz
-    # 检查下载是否成功
+    # 检查下载文件
     if [ ! -s /tmp/ookla-speedtest/ookla-speedtest.tgz ]; then
         echo "❌ Ookla Speedtest CLI 下载失败！"
+        echo "URL: ${OOKLA_URL}"
+        rm -rf /tmp/ookla-speedtest
         exit 1
     fi
+    echo "📦 Ookla Speedtest CLI 下载完成："
+    ls -lh /tmp/ookla-speedtest/ookla-speedtest.tgz
+    # ------------------------------------------------------------
     # 解压
-    tar -xzf /tmp/ookla-speedtest/ookla-speedtest.tgz \
+    # ------------------------------------------------------------
+    tar -xzf \
+        /tmp/ookla-speedtest/ookla-speedtest.tgz \
         -C /tmp/ookla-speedtest
-    # 检查 speedtest 是否存在
+    # 检查 speedtest 二进制
     if [ ! -f /tmp/ookla-speedtest/speedtest ]; then
-        echo "❌ 解压后未找到 speedtest！"
+        echo "❌ 解压后未找到 speedtest 二进制文件！"
+        rm -rf /tmp/ookla-speedtest
         exit 1
     fi
-    # 安装到 luci-app-netspeedtest 要求的位置
+    chmod 755 /tmp/ookla-speedtest/speedtest
+    # ------------------------------------------------------------
+    # 验证 Ookla CLI
+    # ------------------------------------------------------------
+    echo "🔍 验证 Ookla Speedtest CLI..."
+    if ! /tmp/ookla-speedtest/speedtest --version; then
+        echo "❌ Ookla Speedtest CLI 验证失败！"
+        rm -rf /tmp/ookla-speedtest
+        exit 1
+    fi
+    # ------------------------------------------------------------
+    # 安装到 luci-app-netspeedtest 实际使用的路径
+    # ------------------------------------------------------------
     cp -f \
         /tmp/ookla-speedtest/speedtest \
         files/usr/libexec/netspeedtest/speedtest
-    # 设置执行权限
-    chmod 755 files/usr/libexec/netspeedtest/speedtest
+    chmod 755 \
+        files/usr/libexec/netspeedtest/speedtest
+    # ------------------------------------------------------------
+    # 最终验证
+    # ------------------------------------------------------------
+    echo "🔍 验证预装文件..."
+    if ! files/usr/libexec/netspeedtest/speedtest --version; then
+        echo "❌ 预装的 Ookla Speedtest CLI 验证失败！"
+        rm -rf /tmp/ookla-speedtest
+        exit 1
+    fi
     # 清理临时文件
     rm -rf /tmp/ookla-speedtest
-    echo "✅ luci-app-netspeedtest + Ookla Speedtest CLI 预装完成！"
-    echo "   → files/usr/libexec/netspeedtest/speedtest"
+    echo "✅ 最新稳定版 Ookla Speedtest CLI 预装完成！"
+    echo "   ARCH : ${OOKLA_ARCH}"
+    echo "   PATH : files/usr/libexec/netspeedtest/speedtest"
 else
     echo "⚪️ 未选择 luci-app-netspeedtest"
 fi
