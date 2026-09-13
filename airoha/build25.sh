@@ -332,6 +332,74 @@ else
     echo "⚪️ 未选择 luci-app-nikki"
 fi
 
+# 若构建 luci-app-netspeedtest，则预装 Ookla Speedtest CLI
+if echo "$PACKAGES" | grep -q "luci-app-netspeedtest"; then
+    echo "🚀 检测到 luci-app-netspeedtest，开始预装 Ookla Speedtest CLI..."
+    # 创建目录
+    mkdir -p files/usr/libexec/netspeedtest
+    # Ookla Speedtest CLI 版本
+    OOKLA_VERSION="1.2.0"
+    # 根据 OpenWrt 架构选择 Ookla CLI
+    case "$ARCH" in
+        aarch64|aarch64_cortex-a53|aarch64_generic)
+            OOKLA_ARCH="aarch64"
+            ;;
+        x86_64)
+            OOKLA_ARCH="x86_64"
+            ;;
+        i386)
+            OOKLA_ARCH="i386"
+            ;;
+        armhf)
+            OOKLA_ARCH="armhf"
+            ;;
+        armel)
+            OOKLA_ARCH="armel"
+            ;;
+        *)
+            echo "❌ 不支持的架构: $ARCH"
+            exit 1
+            ;;
+    esac
+    # Ookla 官方下载地址
+    OOKLA_URL="https://install.speedtest.net/app/cli/ookla-speedtest-${OOKLA_VERSION}-linux-${OOKLA_ARCH}.tgz"
+    echo "📦 Ookla Version: ${OOKLA_VERSION}"
+    echo "🏗️ OpenWrt ARCH: ${ARCH}"
+    echo "🎯 Ookla ARCH: ${OOKLA_ARCH}"
+    echo "🔗 Download: ${OOKLA_URL}"
+    # 下载到临时目录
+    rm -rf /tmp/ookla-speedtest
+    mkdir -p /tmp/ookla-speedtest
+    wget -q --no-check-certificate \
+        "$OOKLA_URL" \
+        -O /tmp/ookla-speedtest/ookla-speedtest.tgz
+    # 检查下载是否成功
+    if [ ! -s /tmp/ookla-speedtest/ookla-speedtest.tgz ]; then
+        echo "❌ Ookla Speedtest CLI 下载失败！"
+        exit 1
+    fi
+    # 解压
+    tar -xzf /tmp/ookla-speedtest/ookla-speedtest.tgz \
+        -C /tmp/ookla-speedtest
+    # 检查 speedtest 是否存在
+    if [ ! -f /tmp/ookla-speedtest/speedtest ]; then
+        echo "❌ 解压后未找到 speedtest！"
+        exit 1
+    fi
+    # 安装到 luci-app-netspeedtest 要求的位置
+    cp -f \
+        /tmp/ookla-speedtest/speedtest \
+        files/usr/libexec/netspeedtest/speedtest
+    # 设置执行权限
+    chmod 755 files/usr/libexec/netspeedtest/speedtest
+    # 清理临时文件
+    rm -rf /tmp/ookla-speedtest
+    echo "✅ luci-app-netspeedtest + Ookla Speedtest CLI 预装完成！"
+    echo "   → files/usr/libexec/netspeedtest/speedtest"
+else
+    echo "⚪️ 未选择 luci-app-netspeedtest"
+fi
+
 # 构建镜像
 echo "$(date '+%Y-%m-%d %H:%M:%S') - 开始构建......打印所有包名"
 echo "$PACKAGES"
