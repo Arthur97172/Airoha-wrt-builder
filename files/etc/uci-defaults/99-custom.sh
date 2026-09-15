@@ -77,8 +77,8 @@ uci commit network
 uci commit
 
 # 清理并还原 Banner
-cp /etc/banner1/banner /etc/
-rm -r /etc/banner1
+#cp /etc/banner1/banner /etc/
+#rm -r /etc/banner1
 
 # 设置作者描述信息
 FILE_PATH="/etc/openwrt_release"
