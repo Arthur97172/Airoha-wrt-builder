@@ -198,7 +198,10 @@ jobs:
           # 替换 repositories 中的占位符
           sed -i "s|VERSION_PLACEHOLDER|${{ env.FINAL_LUCI_VER }}|g" repositories
           sed -i "s|KMOD_PLACEHOLDER|${FULL_KMOD_URL}|g" repositories
-
+          if [ -f "Makefile" ]; then
+            echo "🛠️ 正在给 ImageBuilder 的 Makefile 中的 wget 增加重试机制..."
+            sed -i 's/wget /wget --tries=5 --timeout=20 --waitretry=3 /g' Makefile
+          fi
           echo "最终 repositories 内容："
           cat repositories
 
