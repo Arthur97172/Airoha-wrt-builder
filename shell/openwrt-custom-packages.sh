@@ -53,6 +53,9 @@ CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-netspeedtest luci-i18n-netspeedtest-z
 # Nikki代理面板 (nikki)
 #CUSTOM_PACKAGES="$CUSTOM_PACKAGES nikki luci-app-nikki luci-i18n-nikki-zh-cn"
 
+# Online-upgrade在线升级 (online-upgrade)
+CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-online-upgrade"
+
 # Openclash代理面板 (openclash)
 CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-openclash"
 
