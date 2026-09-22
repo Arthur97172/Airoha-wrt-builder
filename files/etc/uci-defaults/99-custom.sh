@@ -5,16 +5,14 @@ LOGFILE="/tmp/uci-defaults-log.txt"
 echo "Starting 99-custom.sh at $(date)" >>$LOGFILE
 
 # 基础设置
-uci set firewall.@zone[1].input='ACCEPT'
-uci add dhcp domain
-uci set "dhcp.@domain[-1].name=time.android.com"
-uci set "dhcp.@domain[-1].ip=203.107.6.88"
-uci set system.@system[0].hostname='WRTVERSIONINFO'
-uci set system.@system[0].timezone='CST-8'
-uci set system.@system[0].zonename='Asia/Shanghai'
-uci set luci.main.lang='zh_cn'
-uci commit system
-uci commit luci
+uci -q set firewall.@zone[1].input='ACCEPT'
+uci -q add dhcp domain
+uci -q set "dhcp.@domain[-1].name=time.android.com"
+uci -q set "dhcp.@domain[-1].ip=203.107.6.88"
+uci -q set system.@system[0].hostname='WRTVERSIONINFO'
+uci -q set system.@system[0].timezone='CST-8'
+uci -q set system.@system[0].zonename='Asia/Taipei'
+uci -q set luci.main.lang='zh_cn'
 
 # 计算网卡物理接口数量
 ifnames=""
@@ -29,21 +27,20 @@ for iface in /sys/class/net/*; do
         ifnames="${ifnames:+$ifnames }$iface_name"
     fi
 done
+
 set -- $ifnames
 count=$#
-echo "========================================"
-echo "Detected physical Ethernet interfaces:"
-echo "$ifnames"
-echo "Ethernet interface count: $count"
-echo "========================================"
-if [ "$count" -eq 0 ]; then
-    echo "ERROR: No physical Ethernet interface detected."
-    exit 1
-fi
+
+echo "========================================" >> "$LOGFILE"
+echo "Detected physical Ethernet interfaces: $ifnames" >> "$LOGFILE"
+echo "Ethernet interface count: $count" >> "$LOGFILE"
+echo "========================================" >> "$LOGFILE"
 # 网络设置
-if [ "$count" -eq 1 ]; then
+if [ "$count" -eq 0 ]; then
+    echo "ERROR: No physical Ethernet interface detected!" >> "$LOGFILE"
+elif [ "$count" -eq 1 ]; then
     # 单网口设备：采用 DHCP 模式（旁路由）
-    uci set network.lan.proto='dhcp'
+    uci -q set network.lan.proto='dhcp'
     uci -q delete network.lan.ipaddr
     uci -q delete network.lan.netmask
     uci -q delete network.lan.gateway
@@ -54,12 +51,12 @@ elif [ "$count" -gt 1 ]; then
     # 剩余网口作为 LAN
     lan_ifnames=$(echo "$ifnames" | cut -d ' ' -f2-)
     # WAN 配置
-    uci set network.wan=interface
-    uci set network.wan.device="$wan_ifname"
-    uci set network.wan.proto='dhcp'
+    uci -q set network.wan=interface
+    uci -q set network.wan.device="$wan_ifname"
+    uci -q set network.wan.proto='dhcp'
     # WAN6 配置
-    uci set network.wan6=interface
-    uci set network.wan6.device="$wan_ifname"
+    uci -q set network.wan6=interface
+    uci -q set network.wan6.device="$wan_ifname"
     # br-lan 端口配置
     section=$(uci show network | awk -F '[.=]' \
         '/\.@?device\[\d+\]\.name=.br-lan.$/ {print $2; exit}')
@@ -73,20 +70,26 @@ elif [ "$count" -gt 1 ]; then
         echo "ports of device 'br-lan' updated." >> "$LOGFILE"
     fi
     # 多网口 LAN 必须明确指定静态 IP（Workflow 的 sed 会自动替换 __IPADDR__）
-    uci set network.lan.proto='static'
-    uci set network.lan.ipaddr='__IPADDR__'
-    uci set network.lan.netmask='255.255.255.0'
+    uci -q set network.lan.proto='static'
+    uci -q set network.lan.ipaddr='__IPADDR__'
+    uci -q set network.lan.netmask='255.255.255.0'
 fi
 # =========================
 # SSH / Web 管理
 # =========================
-uci delete ttyd.@ttyd[0].interface
-uci set dropbear.@dropbear[0].Interface=''
+uci -q delete ttyd.@ttyd[0].interface
+uci -q set dropbear.@dropbear[0].Interface=''
 # =========================
 # 保存配置
 # =========================
+uci commit system
+uci commit luci
+uci commit firewall
+uci commit dhcp
 uci commit network
-uci commit
+uci commit dropbear
+uci -q commit ttyd
+
 # 清理并还原 Banner
 cp /etc/banner1/banner /etc/
 rm -r /etc/banner1
