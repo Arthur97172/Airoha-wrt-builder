@@ -20,8 +20,8 @@ uci commit luci
 ifnames=""
 for iface in /sys/class/net/*; do
     iface_name=$(basename "$iface")
-    if [ "$iface_name" != "lo" ] && [ "$iface_name" != "br-lan" ] && \
-       ! echo "$iface_name" | grep -qE '^br-|phy|ap'; then
+    if [ -e "$iface/device" ] && [ "$iface_name" != "lo" ] && \
+       ! echo "$iface_name" | grep -qE '^br-|^wlan|^phy|^ap|^mon'; then
         ifnames="$ifnames $iface_name"
     fi
 done
