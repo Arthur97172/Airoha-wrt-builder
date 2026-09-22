@@ -19,14 +19,27 @@ uci commit luci
 # 计算网卡物理接口数量
 ifnames=""
 for iface in /sys/class/net/*; do
-    iface_name=$(basename "$iface")
-    if [ -e "$iface/device" ] && [ "$iface_name" != "lo" ] && \
-       ! echo "$iface_name" | grep -qE '^br-|^wlan|^phy|^ap|^mon'; then
-        ifnames="$ifnames $iface_name"
+    [ -e "$iface" ] || continue
+    iface_name="${iface##*/}"
+    if [ -e "$iface/device" ] && \
+       [ "$iface_name" != "lo" ] && \
+       ! echo "$iface_name" | grep -qE '^br-' && \
+       [ ! -d "$iface/wireless" ] && \
+       [ ! -d "$iface/phy80211" ]; then
+        ifnames="${ifnames:+$ifnames }$iface_name"
     fi
 done
-ifnames=$(echo "$ifnames" | awk '{$1=$1};1')
-count=$(echo "$ifnames" | wc -w)
+set -- $ifnames
+count=$#
+echo "========================================"
+echo "Detected physical Ethernet interfaces:"
+echo "$ifnames"
+echo "Ethernet interface count: $count"
+echo "========================================"
+if [ "$count" -eq 0 ]; then
+    echo "ERROR: No physical Ethernet interface detected."
+    exit 1
+fi
 # 网络设置
 if [ "$count" -eq 1 ]; then
     # 单网口设备：采用 DHCP 模式（旁路由）
