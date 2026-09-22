@@ -80,14 +80,15 @@ jobs:
           # 克隆 naoki66 仓库
           echo ">>> 克隆 naoki66/ImmortalWrt-for-Gemtek-XR1710G (master)..."
           git clone --depth=1 -b master https://github.com/naoki66/ImmortalWrt-for-Gemtek-XR1710G.git /tmp/naoki
-          for pkg in luci-app-airoha-flowsense luci-app-airoha-npu luci-app-airoha-fancontrol; do
+          #for pkg in luci-app-airoha-flowsense luci-app-airoha-npu luci-app-airoha-fancontrol; do
+          for pkg in luci-app-airoha-fancontrol luci-app-airoha; do
             copy_plugin "/tmp/naoki" "$pkg"
           done
 
           # 克隆 YYH2913 仓库
           echo ">>> 克隆 YYH2913/openwrt (xr1710g-6.18-integration)..."
           git clone --depth=1 -b xr1710g-6.18-integration https://github.com/YYH2913/openwrt.git /tmp/yyh
-          for pkg in luci-app-mlo luci-app-w1700k-fancontrol; do
+          for pkg in luci-app-airoha-flowsense luci-app-airoha-npu luci-app-mlo luci-app-w1700k-fancontrol; do
             copy_plugin "/tmp/yyh" "$pkg"
           done
 
@@ -107,6 +108,7 @@ jobs:
           echo "CONFIG_PACKAGE_luci-app-w1700k-fancontrol=m" >> .config
           echo "CONFIG_PACKAGE_luci-app-cpufreq=m" >> .config
           echo "CONFIG_PACKAGE_libubox=m" >> .config
+          echo "luci-app-airoha=m" >> .config
 
           make defconfig
           echo "配置完成"
@@ -116,7 +118,7 @@ jobs:
           set -e
           cd sdk
 
-          PLUGINS="libubox luci-app-airoha-flowsense luci-app-airoha-npu luci-app-airoha-fancontrol luci-app-mlo luci-app-w1700k-fancontrol luci-app-cpufreq"
+          PLUGINS="libubox luci-app-airoha luci-app-airoha-flowsense luci-app-airoha-npu luci-app-airoha-fancontrol luci-app-mlo luci-app-w1700k-fancontrol luci-app-cpufreq"
 
           for pkg in $PLUGINS; do
             echo ""
@@ -138,12 +140,14 @@ jobs:
           rm -f apps/luci-app-airoha-fancontrol*.apk apps/luci-i18n-airoha-fancontrol*.apk
           rm -f apps/cpufreq*.apk apps/luci-app-cpufreq*.apk apps/luci-i18n-cpufreq-zh-cn*.apk
           rm -f apps/luci-app-mlo*.apk apps/luci-i18n-mlo-zh-cn*.apk
+          rm -f apps/luci-app-airoha*.apk apps/luci-i18n-airoha-zh-cn*.apk
           rm -f apps/libubox*.apk
 
           # 提取编译完成的目标包
           find sdk/bin -name "*.apk" | while read -r f; do
             case "$(basename "$f")" in
               luci-app-airoha-flowsense*|luci-i18n-airoha-flowsense-zh-cn*|\
+              luci-app-airoha*|luci-i18n-airoha-zh-cn*|\
               luci-app-airoha-npu*|luci-i18n-airoha-npu-zh-cn*|\
               luci-app-w1700k-fancontrol*|luci-i18n-w1700k-fancontrol*|\
               luci-app-airoha-fancontrol*|luci-i18n-airoha-fancontrol*|\
@@ -175,6 +179,8 @@ jobs:
             apps/luci-i18n-w1700k-fancontrol*.apk
             apps/luci-app-airoha-fancontrol*.apk
             apps/luci-i18n-airoha-fancontrol*.apk
+            apps/luci-app-airoha*.apk
+            apps/luci-i18n-airoha*.apk
             apps/cpufreq*.apk
             apps/luci-app-cpufreq*.apk
             apps/luci-i18n-cpufreq-zh-cn*.apk
