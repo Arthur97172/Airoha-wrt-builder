@@ -57,7 +57,7 @@ CUSTOM_PACKAGES="$CUSTOM_PACKAGES mosdns luci-app-mosdns luci-i18n-mosdns-zh-cn"
 #CUSTOM_PACKAGES="$CUSTOM_PACKAGES nikki luci-app-nikki luci-i18n-nikki-zh-cn"
 
 # Online-upgrade在线升级 (online-upgrade)
-CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-online-upgrade"
+#CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-online-upgrade"
 
 # openclash代理面板 (openclash)
 CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-openclash"
@@ -77,6 +77,9 @@ CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-poweroffdevice luci-i18n-poweroffdevi
 
 # run插件安装工具 (run)
 #CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-run"
+
+# Substore 订阅管理 (substore)
+CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-substore"
 
 # tailscaleVPN代理 (tailscale)
 #CUSTOM_PACKAGES="$CUSTOM_PACKAGES tailscale luci-app-tailscale luci-i18n-tailscale-zh-cn"
