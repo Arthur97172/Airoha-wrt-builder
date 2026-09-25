@@ -6,7 +6,7 @@
 CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-cpufreq luci-i18n-cpufreq-zh-cn"
 
 # cpu状态
-#CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-cpu-status"
+CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-cpu-status"
 
 #动态DNS
 CUSTOM_PACKAGES="$CUSTOM_PACKAGES ddns-scripts-cloudflare luci-app-ddns luci-i18n-ddns-zh-cn"
