@@ -6,7 +6,7 @@
 CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-cpufreq luci-i18n-cpufreq-zh-cn"
 
 # cpu状态
-CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-cpu-status"
+#CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-cpu-status"
 
 #动态DNS
 CUSTOM_PACKAGES="$CUSTOM_PACKAGES ddns-scripts-cloudflare luci-app-ddns luci-i18n-ddns-zh-cn"
@@ -57,7 +57,7 @@ CUSTOM_PACKAGES="$CUSTOM_PACKAGES mosdns luci-app-mosdns luci-i18n-mosdns-zh-cn"
 #CUSTOM_PACKAGES="$CUSTOM_PACKAGES nikki luci-app-nikki luci-i18n-nikki-zh-cn"
 
 # Online-upgrade在线升级 (online-upgrade)
-#CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-online-upgrade"
+CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-online-upgrade"
 
 # openclash代理面板 (openclash)
 CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-openclash"
