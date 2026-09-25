@@ -27,7 +27,7 @@ CUSTOM_PACKAGES="$CUSTOM_PACKAGES bandix-plus luci-app-bandix-plus luci-i18n-ban
 #CUSTOM_PACKAGES="$CUSTOM_PACKAGES clashoo luci-app-clashoo luci-i18n-clashoo-zh-cn"
 
 # Cpu状态 (cpu-status)
-CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-cpu-status"
+#CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-cpu-status"
 
 # Daede代理面板 (daede)
 #CUSTOM_PACKAGES="$CUSTOM_PACKAGES dae daed luci-app-daede"
@@ -77,6 +77,9 @@ CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-poweroffdevice luci-i18n-poweroffdevi
 
 # Samb文件共享 (samba4)
 #CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-samba4 luci-i18n-samba4-zh-cn"
+
+# Substore 订阅管理 (substore)
+CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-substore"
 
 # TailscaleVPN代理 (tailscale)
 #CUSTOM_PACKAGES="$CUSTOM_PACKAGES tailscale luci-app-tailscale luci-i18n-tailscale-zh-cn"
