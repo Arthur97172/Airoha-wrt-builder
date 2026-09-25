@@ -188,16 +188,11 @@ else
         fi
     fi
 
-    LAN_IP="__IPADDR__"
-    if [ -z "$LAN_IP" ] || [ "$LAN_IP" = "__IPADDR__" ]; then
-        echo "ERROR: LAN IP address has not been replaced!" >> "$LOGFILE"
-        echo "network.lan.ipaddr will NOT be modified." >> "$LOGFILE"
-    else
-        uci -q set network.lan.proto='static'
-        uci -q set network.lan.ipaddr="$LAN_IP"
-        uci -q set network.lan.netmask='255.255.255.0'
-        echo "LAN IP: $LAN_IP/24" >> "$LOGFILE"
-    fi
+    # LAN 静态 IP (恢复直接写入占位符)
+    uci -q set network.lan.proto='static'
+    uci -q set network.lan.ipaddr='__IPADDR__'
+    uci -q set network.lan.netmask='255.255.255.0'
+    echo "LAN IP set to: __IPADDR__/24" >> "$LOGFILE"
 fi
 
 # =========================================================
