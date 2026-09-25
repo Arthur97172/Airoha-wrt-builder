@@ -11,100 +11,155 @@ echo "========================================" >> "$LOGFILE"
 # 基础设置
 # =========================================================
 
-# 通用匹配 name='wan' 的防火墙区域 (兼容匿名 zone[x] 与具名 zone)
-wan_zone=$(uci show firewall | awk -F '[.=]' '/^firewall\.[^.]+\.name=.wan.$/ {print $2; exit}')
+wan_zone=$(uci show firewall 2>/dev/null |
+    awk -F '[.=]' '/^firewall\.[^.]+\.name=.wan.$/ {print $2; exit}')
+
 if [ -n "$wan_zone" ]; then
     uci -q set "firewall.$wan_zone.input=ACCEPT"
+    echo "Firewall WAN zone: $wan_zone -> input ACCEPT" >> "$LOGFILE"
 else
-    # 兜底：如果找不到 name='wan' 的 zone，退回索引 1
     uci -q set firewall.@zone[1].input='ACCEPT'
+    echo "WARNING: WAN zone not found, fallback to firewall.@zone[1]" >> "$LOGFILE"
 fi
 
-uci -q add dhcp domain
-uci -q set "dhcp.@domain[-1].name=time.android.com"
-uci -q set "dhcp.@domain[-1].ip=203.107.6.88"
+if ! uci show dhcp 2>/dev/null |
+    grep -q "name='time.android.com'"; then
+    uci -q add dhcp domain
+    uci -q set "dhcp.@domain[-1].name=time.android.com"
+    uci -q set "dhcp.@domain[-1].ip=203.107.6.88"
+    echo "Added DHCP domain: time.android.com -> 203.107.6.88" >> "$LOGFILE"
+else
+    echo "DHCP domain time.android.com already exists" >> "$LOGFILE"
+fi
+
 uci -q set system.@system[0].hostname='WRTVERSIONINFO'
 uci -q set system.@system[0].timezone='CST-8'
 uci -q set system.@system[0].zonename='Asia/Taipei'
-
 uci -q set luci.main.lang='zh_cn'
 
-
 # =========================================================
-# 计算物理以太网接口数量
+# 检测 Ethernet 用户端口
 # =========================================================
 
 ifnames=""
 
 for iface in /sys/class/net/*; do
     [ -e "$iface" ] || continue
-
     iface_name="${iface##*/}"
 
-    # 必须存在 device，且排除 lo/bridge/wireless
-    if [ -e "$iface/device" ] && \
-       [ "$iface_name" != "lo" ] && \
-       ! echo "$iface_name" | grep -qE '^br-' && \
-       [ ! -d "$iface/wireless" ] && \
-       [ ! -d "$iface/phy80211" ]; then
+    case "$iface_name" in
+        lo|br-*|wlan*|wl*|phy*)
+            continue
+            ;;
+    esac
 
-        ifnames="${ifnames:+$ifnames }$iface_name"
+    [ -d "$iface/wireless" ] && continue
+    [ -d "$iface/phy80211" ] && continue
+
+    [ -e "$iface/device" ] || continue
+    dev_target=$(readlink -f "$iface/device" 2>/dev/null)
+    [ -n "$dev_target" ] || continue
+
+    echo "$dev_target" | grep -q '/virtual/' && continue
+
+    link_info=$(ip -d link show "$iface_name" 2>/dev/null)
+
+    is_dsa_port=0
+    if echo "$link_info" | grep -q 'portname '; then
+        is_dsa_port=1
     fi
+
+    if [ "$is_dsa_port" -eq 0 ]; then
+        dsa_conduit=0
+        for other_iface in /sys/class/net/*; do
+            [ -e "$other_iface" ] || continue
+            other_name="${other_iface##*/}"
+            [ "$other_name" = "$iface_name" ] && continue
+
+            case "$other_name" in
+                lo|br-*|wlan*|wl*|phy*)
+                    continue
+                    ;;
+            esac
+
+            other_info=$(ip -d link show "$other_name" 2>/dev/null)
+            if echo "$other_info" | grep -q "dsa conduit $iface_name"; then
+                dsa_conduit=1
+                break
+            fi
+        done
+
+        if [ "$dsa_conduit" -eq 1 ]; then
+            echo "Excluded DSA conduit: $iface_name" >> "$LOGFILE"
+            continue
+        fi
+    fi
+
+    ifnames="${ifnames:+$ifnames }$iface_name"
 done
 
-# 将接口列表转换成位置参数
 set -- $ifnames
 count=$#
 
-
-# =========================================================
-# 网卡检测日志
-# =========================================================
-
-echo "Detected physical Ethernet interfaces: $ifnames" >> "$LOGFILE"
-echo "Ethernet interface count: $count" >> "$LOGFILE"
-
+echo "Detected Ethernet user ports: $ifnames" >> "$LOGFILE"
+echo "Ethernet user port count: $count" >> "$LOGFILE"
 
 # =========================================================
 # 网络设置
 # =========================================================
 
 if [ "$count" -eq 0 ]; then
-
-    # -----------------------------------------------------
-    # 未检测到物理网卡
-    # -----------------------------------------------------
-
-    echo "ERROR: No physical Ethernet interface detected!" >> "$LOGFILE"
-
+    echo "ERROR: No Ethernet user port detected!" >> "$LOGFILE"
 elif [ "$count" -eq 1 ]; then
+    only_port="$1"
+    echo "Single Ethernet user port detected: $only_port" >> "$LOGFILE"
+    echo "Configuring LAN as DHCP." >> "$LOGFILE"
 
-    # -----------------------------------------------------
-    # 单网口设备 (旁路由 / NAS 模式)
-    # -----------------------------------------------------
-
-    echo "Single Ethernet interface detected. Configuring LAN as DHCP." >> "$LOGFILE"
     uci -q set network.lan.proto='dhcp'
     uci -q delete network.lan.ipaddr
     uci -q delete network.lan.netmask
     uci -q delete network.lan.gateway
     uci -q delete network.lan.dns
+else
+    echo "Multiple Ethernet user ports detected." >> "$LOGFILE"
+    wan_ifname=""
 
-elif [ "$count" -gt 1 ]; then
+    configured_wan=$(uci -q get network.wan.device 2>/dev/null)
+    if [ -n "$configured_wan" ]; then
+        for port in $ifnames; do
+            if [ "$port" = "$configured_wan" ]; then
+                wan_ifname="$port"
+                break
+            fi
+        done
+        [ -n "$wan_ifname" ] && echo "Using existing configured WAN device: $wan_ifname" >> "$LOGFILE"
+    fi
 
-    # -----------------------------------------------------
-    # 多网口设备 (主路由模式)
-    # -----------------------------------------------------
+    if [ -z "$wan_ifname" ]; then
+        for port in $ifnames; do
+            if [ "$port" = "wan" ]; then
+                wan_ifname="$port"
+                echo "Detected standard WAN interface: $wan_ifname" >> "$LOGFILE"
+                break
+            fi
+        done
+    fi
 
-    wan_ifname="$1"
-    shift
-    lan_ifnames="$*"
+    if [ -z "$wan_ifname" ]; then
+        wan_ifname="$1"
+        echo "WARNING: Cannot determine WAN automatically." >> "$LOGFILE"
+        echo "Fallback WAN interface: $wan_ifname" >> "$LOGFILE"
+    fi
 
-    echo "Multiple Ethernet interfaces detected." >> "$LOGFILE"
+    lan_ifnames=""
+    for port in $ifnames; do
+        [ "$port" = "$wan_ifname" ] && continue
+        lan_ifnames="${lan_ifnames:+$lan_ifnames }$port"
+    done
+
     echo "WAN interface: $wan_ifname" >> "$LOGFILE"
     echo "LAN interfaces: $lan_ifnames" >> "$LOGFILE"
 
-    # WAN / WAN6 配置
     uci -q set network.wan=interface
     uci -q set network.wan.device="$wan_ifname"
     uci -q set network.wan.proto='dhcp'
@@ -112,48 +167,45 @@ elif [ "$count" -gt 1 ]; then
     uci -q set network.wan6.device="$wan_ifname"
     uci -q set network.wan6.proto='dhcpv6'
 
-    # -----------------------------------------------------
-    # 通用型 br-lan device 查找 (兼容匿名/具名 section)
-    # 匹配 network.<section>.name='br-lan'
-    # -----------------------------------------------------
-
-    section=$(uci show network | awk -F '[.=]' '/^network\.[^.]+\.name=['"'"'"]br-lan['"'"'"]$/ {print $2; exit}')
+    section=$(uci show network 2>/dev/null |
+        awk -F '[.=]' '/^network\.[^.]+\.name=['"'"'"]br-lan['"'"'"]$/ {print $2; exit}')
 
     if [ -n "$section" ]; then
-
+        echo "Found br-lan device section: $section" >> "$LOGFILE"
         uci -q delete "network.$section.ports"
         for port in $lan_ifnames; do
-            uci -q add_list "network.$section.ports"="$port"
+            uci -q add_list "network.$section.ports=$port"
         done
         echo "br-lan ports updated: $lan_ifnames" >> "$LOGFILE"
-
     else
-
         first_lan_port=$(echo "$lan_ifnames" | awk '{print $1}')
-        uci -q set network.lan.device="$first_lan_port"
-        echo "WARNING: Cannot find 'br-lan' device. Fallback to setting network.lan.device='$first_lan_port'." >> "$LOGFILE"
-
+        if [ -n "$first_lan_port" ]; then
+            uci -q set network.lan.device="$first_lan_port"
+            echo "WARNING: Cannot find br-lan device." >> "$LOGFILE"
+            echo "Fallback LAN device: $first_lan_port" >> "$LOGFILE"
+        else
+            echo "ERROR: No LAN port available!" >> "$LOGFILE"
+        fi
     fi
 
-    # LAN 配置静态 IP
-    uci -q set network.lan.proto='static'
-    uci -q set network.lan.ipaddr='__IPADDR__'
-    uci -q set network.lan.netmask='255.255.255.0'
-
+    LAN_IP="__IPADDR__"
+    if [ -z "$LAN_IP" ] || [ "$LAN_IP" = "__IPADDR__" ]; then
+        echo "ERROR: LAN IP address has not been replaced!" >> "$LOGFILE"
+        echo "network.lan.ipaddr will NOT be modified." >> "$LOGFILE"
+    else
+        uci -q set network.lan.proto='static'
+        uci -q set network.lan.ipaddr="$LAN_IP"
+        uci -q set network.lan.netmask='255.255.255.0'
+        echo "LAN IP: $LAN_IP/24" >> "$LOGFILE"
+    fi
 fi
 
-
 # =========================================================
-# SSH / Web 管理
+# SSH / Web 管理 & 保存配置
 # =========================================================
 
 uci -q delete ttyd.@ttyd[0].interface
 uci -q set dropbear.@dropbear[0].Interface=''
-
-
-# =========================================================
-# 保存配置
-# =========================================================
 
 uci commit system
 uci commit luci
@@ -163,34 +215,24 @@ uci commit network
 uci commit dropbear
 uci -q commit ttyd
 
-
-# =========================================================
-# 清理并还原 Banner 与描述信息
-# =========================================================
-
 if [ -f /etc/banner1/banner ]; then
     cp -f /etc/banner1/banner /etc/
 fi
-
-if [ -d /etc/banner1 ]; then
-    rm -rf /etc/banner1
-fi
+[ -d /etc/banner1 ] && rm -rf /etc/banner1
 
 FILE_PATH="/etc/openwrt_release"
 NEW_DESCRIPTION="WRTVERSIONINFO VERXXXX"
-
 if [ -f "$FILE_PATH" ]; then
-    sed -i \
-        "s/DISTRIB_DESCRIPTION='[^']*'/DISTRIB_DESCRIPTION='$NEW_DESCRIPTION'/" \
-        "$FILE_PATH"
+    sed -i "s/DISTRIB_DESCRIPTION='[^']*'/DISTRIB_DESCRIPTION='$NEW_DESCRIPTION'/" "$FILE_PATH"
 fi
 
-
-# =========================================================
-# 完成
-# =========================================================
-
 echo "========================================" >> "$LOGFILE"
+echo "Final Ethernet ports: $ifnames" >> "$LOGFILE"
+echo "Final Ethernet port count: $count" >> "$LOGFILE"
+if [ "$count" -gt 1 ]; then
+    echo "Final WAN: $wan_ifname" >> "$LOGFILE"
+    echo "Final LAN: $lan_ifnames" >> "$LOGFILE"
+fi
 echo "99-custom.sh completed at $(date)" >> "$LOGFILE"
 echo "========================================" >> "$LOGFILE"
 
