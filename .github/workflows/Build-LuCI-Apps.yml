@@ -2,7 +2,7 @@ name: 📦 Build LuCI Apps
 
 on:
   schedule:
-    - cron: '0 22 */2 * *'  # 每2日凌晨6点执行
+    - cron: '0 22 */7 * *'  # 每7日凌晨6点执行
   workflow_dispatch:  # 允许手动触发
 
 jobs:
