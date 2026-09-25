@@ -96,12 +96,14 @@ jobs:
 
           # 克隆 luanmuc 仓库
           echo ">>> 克隆 luanmuc/luci-app-airoha-npu (main)..."
-          git clone --depth=1 -b main https://github.com/luanmuc/luci-app-airoha-npu.git /tmp/luanmuc/luci-app-airoha-npu
-          for pkg in luci-app-airoha-npu; do
-          #for pkg in luci-app-airoha-npu luci-app-mlo luci-app-w1700k-fancontrol; do
-          #for pkg in luci-app-airoha-flowsense luci-app-airoha-npu luci-app-mlo luci-app-w1700k-fancontrol; do
-            copy_plugin "/tmp/luanmuc/luci-app-airoha-npu" "$pkg"
-          done
+          git clone --depth=1 -b main https://github.com/luanmuc/luci-app-airoha-npu.git /tmp/luanmuc_repo
+          if [ -d "/tmp/luanmuc_repo" ]; then
+            echo "  ✓ 找到并复制 luci-app-airoha-npu"
+            cp -a /tmp/luanmuc_repo package/luci-app-airoha-npu
+          else
+            echo "  ✗ 错误：克隆 luanmuc/luci-app-airoha-npu 失败"
+            exit 1
+          fi
 
           echo ""
           echo "=== 已成功整合到 package/ 目录的插件 ==="
