@@ -96,11 +96,11 @@ jobs:
 
           # 克隆 luanmuc 仓库
           echo ">>> 克隆 luanmuc/luci-app-airoha-npu (main)..."
-          git clone --depth=1 -b main https://github.com/luanmuc/luci-app-airoha-npu.git /tmp/luanmuc
+          git clone --depth=1 -b main https://github.com/luanmuc/luci-app-airoha-npu.git /tmp/luanmuc/luci-app-airoha-npu
           for pkg in luci-app-airoha-npu; do
           #for pkg in luci-app-airoha-npu luci-app-mlo luci-app-w1700k-fancontrol; do
           #for pkg in luci-app-airoha-flowsense luci-app-airoha-npu luci-app-mlo luci-app-w1700k-fancontrol; do
-            copy_plugin "/tmp/luanmuc" "$pkg"
+            copy_plugin "/tmp/luanmuc/luci-app-airoha-npu" "$pkg"
           done
 
           echo ""
