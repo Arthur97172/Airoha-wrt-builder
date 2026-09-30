@@ -1,0 +1,174 @@
+name: 📦 Build Turboacc Packages
+
+on:
+  schedule:
+    - cron: '0 22 */7 * *'  # 每7日凌晨6点执行
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/share/boost
+          sudo apt-get clean
+          df -h
+
+      - name: Download OpenWrt SDK
+        run: |
+          set -e
+          #SDK_URL="https://downloads.immortalwrt.org/snapshots/targets/airoha/an7581/immortalwrt-sdk-airoha-an7581_gcc-14.4.0_musl.Linux-x86_64.tar.zst"
+          SDK_URL="https://downloads.openwrt.org/snapshots/targets/airoha/an7581/openwrt-sdk-airoha-an7581_gcc-14.4.0_musl.Linux-x86_64.tar.zst"
+          
+          echo ">>> 下载 OpenWrt SDK: $SDK_URL"
+          wget -q --show-progress "$SDK_URL" -O sdk.tar.zst
+          
+          echo ">>> 解压 SDK..."
+          tar --zstd -xf sdk.tar.zst
+          
+          SDK_DIR=$(find . -maxdepth 1 -type d -name "openwrt-sdk-*" | head -n1)
+          if [ -z "$SDK_DIR" ]; then
+            echo "错误：解压后未找到匹配的 SDK 目录"
+            ls -la
+            exit 1
+          fi
+          
+          echo "找到 SDK 目录: $SDK_DIR"
+          mv "$SDK_DIR" sdk
+          
+          cd sdk
+          echo ">>> 更新 feeds..."
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+          echo "SDK 准备完成"
+
+      - name: Clone and copy plugins
+        run: |
+          set -e
+          cd sdk
+
+          copy_plugin() {
+            local repo_dir="$1"
+            local pkg="$2"
+            local found_path=""
+
+            for path in "$repo_dir/package/$pkg" "$repo_dir/apps/$pkg" "$repo_dir/$pkg" "$repo_dir/lede/$pkg"; do
+              if [ -d "$path" ]; then
+                found_path="$path"
+                break
+              fi
+            done
+
+            if [ -n "$found_path" ]; then
+              echo "  ✓ 找到并复制 $pkg ($found_path)"
+              cp -a "$found_path" package/
+            else
+              echo "  ✗ 错误：在仓库中未找到 $pkg"
+              exit 1
+            fi
+          }
+
+          # 克隆 naoki66 仓库
+          echo ">>> 克隆 chenmozhijin/turboacc (luci)..."
+          git clone --depth=1 -b luci https://github.com/chenmozhijin/turboacc /tmp/turboacc
+          #for pkg in luci-app-airoha-flowsense luci-app-airoha-npu luci-app-airoha-fancontrol; do
+          for pkg in luci-app-turboacc; do
+            copy_plugin "/tmp/turboacc" "$pkg"
+          done
+
+          echo ""
+          echo "=== 已成功整合到 package/ 目录的插件 ==="
+          ls -d package/luci-app-*
+
+      - name: Configure
+        run: |
+          set -e
+          cd sdk
+          
+          echo "CONFIG_PACKAGE_luci-app-turboacc=m" >> .config
+          echo "CONFIG_PACKAGE_luci-i18n-turboacc-zh-cn=m" >> .config
+          echo "CONFIG_PACKAGE_kmod-nft-fullcone=m" >> .config
+
+          make defconfig
+          echo "配置完成"
+
+      - name: Compile packages
+        run: |
+          set -e
+          cd sdk
+
+          PLUGINS="kmod-nft-fullcone luci-app-turboacc luci-i18n-turboacc-zh-cn"
+
+          for pkg in $PLUGINS; do
+            echo ""
+            echo "======== 开始编译 $pkg ========"
+            make package/$pkg/compile V=s -j$(nproc) || make package/$pkg/compile V=s -j1
+          done
+
+          echo ""
+          echo "======== 全部 5 个插件编译完成 ========"
+
+      - name: Collect packages (.apk) to apps/
+        run: |
+          set -e
+          mkdir -p apps
+          # 复制前清理 apps 目录下旧的相应 apk，确保保持最新
+          rm -f apps/luci-app-turboacc*.apk apps/luci-i18n-turboacc-zh-cn*.apk
+          rm -f apps/kmod-nft-fullcone*.apk
+
+          # 提取编译完成的目标包
+          find sdk/bin -name "*.apk" | while read -r f; do
+            case "$(basename "$f")" in
+              luci-app-turboacc*|luci-i18n-turboacc-zh-cn*|\
+              kmod-nft-fullcone*)
+                cp -v "$f" apps/
+                ;;
+            esac
+          done
+
+          echo ""
+          echo "=== 最终已放置到 apps/ 的文件 ==="
+          ls -lh apps/ || echo "未找到匹配包文件"
+
+          echo ""
+          echo "apk 总数量: $(find apps -name '*.apk' | wc -l)"
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: luci-apps-openwrt-an7581
+          path: |
+            apps/luci-app-turboacc*.apk
+            apps/luci-i18n-turboacc-zh-cn*.apk
+            apps/kmod-nft-fullcone*.apk
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Commit and Push apps/
+        run: |
+          echo "=== 提交并推送编译结果到 apps/ 目录 ==="
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add apps/
+
+          if git diff --staged --quiet; then
+            echo "没有需要提交的变更 (apps/ 目录没有变化)"
+          else
+            echo "📦 检测到以下文件变更："
+            git diff --staged --stat
+            git commit -m "build: update compiled apk files in apps/ ($(date +%Y%m%d))"
+            # 拉取最新代码并合并
+            git fetch origin
+            git rebase origin/${{ github.ref_name }} || git rebase origin/main
+            git push origin HEAD:${{ github.ref_name }}
+            echo "✅ 成功将编译后的 APK 推送到仓库"
+          fi
