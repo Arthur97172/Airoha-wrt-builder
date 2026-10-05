@@ -118,7 +118,7 @@ jobs:
           set -e
           cd sdk
 
-          PLUGINS="libubox luci-app-airoha luci-app-airoha-fancontrol luci-app-mlo luci-app-w1700k-fancontrol luci-app-cpufreq"
+          PLUGINS="luci-app-airoha luci-app-airoha-fancontrol luci-app-mlo luci-app-w1700k-fancontrol"
 
           for pkg in $PLUGINS; do
             echo ""
@@ -138,10 +138,8 @@ jobs:
           #rm -f apps/luci-app-airoha-npu*.apk apps/luci-i18n-airoha-npu-zh-cn*.apk
           rm -f apps/luci-app-w1700k-fancontrol*.apk apps/luci-i18n-w1700k-fancontrol*.apk
           rm -f apps/luci-app-airoha-fancontrol*.apk apps/luci-i18n-airoha-fancontrol*.apk
-          rm -f apps/cpufreq*.apk apps/luci-app-cpufreq*.apk apps/luci-i18n-cpufreq-zh-cn*.apk
           rm -f apps/luci-app-mlo*.apk apps/luci-i18n-mlo-zh-cn*.apk
           rm -f apps/luci-app-airoha-2*.apk apps/luci-i18n-airoha-zh-cn*.apk
-          rm -f apps/libubox*.apk
 
           # 提取编译完成的目标包
           find sdk/bin -name "*.apk" | while read -r f; do
@@ -149,8 +147,6 @@ jobs:
               luci-app-airoha-2*|luci-i18n-airoha-zh-cn*|\
               luci-app-w1700k-fancontrol*|luci-i18n-w1700k-fancontrol*|\
               luci-app-airoha-fancontrol*|luci-i18n-airoha-fancontrol*|\
-              cpufreq*|luci-app-cpufreq*|luci-i18n-cpufreq-zh-cn*|\
-              libubox*|\
               luci-app-mlo*|luci-i18n-mlo-zh-cn*)
                 cp -v "$f" apps/
                 ;;
@@ -179,12 +175,8 @@ jobs:
             apps/luci-i18n-airoha-fancontrol*.apk
             apps/luci-app-airoha-2*.apk
             apps/luci-i18n-airoha*.apk
-            apps/cpufreq*.apk
-            apps/luci-app-cpufreq*.apk
-            apps/luci-i18n-cpufreq-zh-cn*.apk
             apps/luci-app-mlo*.apk
             apps/luci-i18n-mlo-zh-cn*.apk
-            apps/libubox*.apk
           if-no-files-found: error
           retention-days: 30
 
