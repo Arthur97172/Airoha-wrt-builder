@@ -32,6 +32,8 @@ PACKAGES="$PACKAGES ip-full ipset iw ppp ppp-mod-pppoe luci-proto-ppp luci-proto
 PACKAGES="$PACKAGES -odhcpd odhcpd-ipv6only odhcp6c"
 PACKAGES="$PACKAGES -wpad-basic-mbedtls -wpad-mbedtls -wpad-openssl wpad-mesh-openssl -libustream-mbedtls -libustream-wolfssl libustream-openssl"
 PACKAGES="$PACKAGES kmod-nft-socket kmod-nft-tproxy"
+PACKAGES="$PACKAGES tmux"
+
 # [无线驱动]
 PACKAGES="$PACKAGES kmod-cfg80211 kmod-mac80211 kmod-mt76-connac kmod-mt76-core kmod-hwmon-nct7802 rtl826x-firmware"
 PACKAGES="$PACKAGES airoha-en7581-mt7996-npu-firmware"
