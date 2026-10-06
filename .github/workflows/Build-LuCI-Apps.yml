@@ -77,6 +77,14 @@ jobs:
             fi
           }
 
+          # 克隆 arthur97172 仓库
+          echo ">>> 克隆 arthur97172/luci-app-airoha-fancontrol (main)..."
+          git clone --depth=1 -b main https://github.com/Arthur97172/luci-app-airoha-fancontrol.git /tmp/arthur/luci-app-airoha-fancontrol
+          #for pkg in luci-app-airoha-flowsense luci-app-airoha-npu luci-app-airoha-fancontrol; do
+          for pkg in luci-app-airoha-fancontrol; do
+            copy_plugin "/tmp/arthur/luci-app-airoha-fancontrol" "$pkg"
+          done
+          
           # 克隆 naoki66 仓库
           echo ">>> 克隆 naoki66/ImmortalWrt-for-Gemtek-XR1710G (master)..."
           git clone --depth=1 -b master https://github.com/naoki66/ImmortalWrt-for-Gemtek-XR1710G.git /tmp/naoki
