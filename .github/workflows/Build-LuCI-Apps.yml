@@ -86,12 +86,12 @@ jobs:
           done
           
           # 克隆 naoki66 仓库
-          echo ">>> 克隆 naoki66/ImmortalWrt-for-Gemtek-XR1710G (master)..."
-          git clone --depth=1 -b master https://github.com/naoki66/ImmortalWrt-for-Gemtek-XR1710G.git /tmp/naoki
+          #echo ">>> 克隆 naoki66/luci-app-airoha (master)..."
+          #git clone --depth=1 -b master https://github.com/naoki66/luci-app-airoha.git /tmp/naoki
           #for pkg in luci-app-airoha-flowsense luci-app-airoha-npu luci-app-airoha-fancontrol; do
-          for pkg in luci-app-airoha-fancontrol luci-app-airoha; do
-            copy_plugin "/tmp/naoki" "$pkg"
-          done
+          #for pkg in luci-app-airoha-fancontrol luci-app-airoha; do
+          #  copy_plugin "/tmp/naoki" "$pkg"
+          #done
 
           # 克隆 YYH2913 仓库
           echo ">>> 克隆 YYH2913/openwrt (xr1710g-6.18-integration)..."
