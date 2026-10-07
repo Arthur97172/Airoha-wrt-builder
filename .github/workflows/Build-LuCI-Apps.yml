@@ -61,7 +61,7 @@ jobs:
             local pkg="$2"
             local found_path=""
 
-            for path in "$repo_dir/package/$pkg" "$repo_dir/apps/$pkg" "$repo_dir/$pkg" "$repo_dir/lede/$pkg"; do
+            for path in "$repo_dir/package/$pkg" "$repo_dir/apps/$pkg" "$repo_dir/$pkg" "$repo_dir/lede/$pkg" "$repo_dir/arthur/$pkg"; do
               if [ -d "$path" ]; then
                 found_path="$path"
                 break
@@ -79,10 +79,10 @@ jobs:
 
           # 克隆 arthur97172 仓库
           echo ">>> 克隆 arthur97172/luci-app-airoha-fancontrol (main)..."
-          git clone --depth=1 -b main https://github.com/Arthur97172/luci-app-airoha-fancontrol.git /tmp/arthur97172
+          git clone --depth=1 -b main https://github.com/Arthur97172/luci-app-airoha-fancontrol.git /tmp/arthur
           #for pkg in luci-app-airoha-flowsense luci-app-airoha-npu luci-app-airoha-fancontrol; do
           for pkg in luci-app-airoha-fancontrol; do
-            copy_plugin "/tmp/arthur97172" "$pkg"
+            copy_plugin "/tmp/arthur" "$pkg"
           done
           
           # 克隆 naoki66 仓库
