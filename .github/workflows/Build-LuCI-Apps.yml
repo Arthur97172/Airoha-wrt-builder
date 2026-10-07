@@ -102,20 +102,12 @@ jobs:
             copy_plugin "/tmp/arthur97172" "$pkg"
           done
 
-          # 克隆 naoki66 仓库
-          #echo ">>> 克隆 naoki66/luci-app-airoha (master)..."
-          #git clone --depth=1 -b master https://github.com/naoki66/luci-app-airoha.git /tmp/naoki
-          #for pkg in luci-app-airoha-flowsense luci-app-airoha-npu luci-app-airoha-fancontrol; do
-          #for pkg in luci-app-airoha-fancontrol luci-app-airoha; do
-          #  copy_plugin "/tmp/naoki" "$pkg"
-          #done
-
           # 克隆 YYH2913 仓库
           echo ">>> 克隆 YYH2913/openwrt (xr1710g-6.18-integration)..."
           rm -rf /tmp/yyh
           git clone --depth=1 -b xr1710g-6.18-integration https://github.com/YYH2913/openwrt.git /tmp/yyh
 
-          for pkg in luci-app-mlo luci-app-w1700k-fancontrol; do
+          for pkg in luci-app-mlo; do
           #for pkg in luci-app-airoha-npu luci-app-mlo luci-app-w1700k-fancontrol; do
           #for pkg in luci-app-airoha-flowsense luci-app-airoha-npu luci-app-mlo luci-app-w1700k-fancontrol; do
             copy_plugin "/tmp/yyh" "$pkg"
@@ -132,7 +124,7 @@ jobs:
           
           echo "CONFIG_PACKAGE_luci-app-airoha-fancontrol=m" >> .config
           echo "CONFIG_PACKAGE_luci-app-mlo=m" >> .config
-          echo "CONFIG_PACKAGE_luci-app-w1700k-fancontrol=m" >> .config
+          #echo "CONFIG_PACKAGE_luci-app-w1700k-fancontrol=m" >> .config
           #echo "CONFIG_PACKAGE_luci-app-cpufreq=m" >> .config
           #echo "CONFIG_PACKAGE_libubox=m" >> .config
           #echo "luci-app-airoha=m" >> .config
@@ -163,7 +155,7 @@ jobs:
           # 复制前清理 apps 目录下旧的相应 apk，确保保持最新
           #rm -f apps/luci-app-airoha-flowsense*.apk apps/luci-i18n-airoha-flowsense-zh-cn*.apk
           #rm -f apps/luci-app-airoha-npu*.apk apps/luci-i18n-airoha-npu-zh-cn*.apk
-          rm -f apps/luci-app-w1700k-fancontrol*.apk apps/luci-i18n-w1700k-fancontrol*.apk
+          #rm -f apps/luci-app-w1700k-fancontrol*.apk apps/luci-i18n-w1700k-fancontrol*.apk
           rm -f apps/luci-app-airoha-fancontrol*.apk apps/luci-i18n-airoha-fancontrol*.apk
           rm -f apps/luci-app-mlo*.apk apps/luci-i18n-mlo-zh-cn*.apk
           #rm -f apps/luci-app-airoha-2*.apk apps/luci-i18n-airoha-zh-cn*.apk
@@ -172,7 +164,7 @@ jobs:
           find sdk/bin -name "*.apk" | while read -r f; do
             case "$(basename "$f")" in
               #luci-app-airoha-2*|luci-i18n-airoha-zh-cn*|\
-              luci-app-w1700k-fancontrol*|luci-i18n-w1700k-fancontrol*|\
+              #luci-app-w1700k-fancontrol*|luci-i18n-w1700k-fancontrol*|\
               luci-app-airoha-fancontrol*|luci-i18n-airoha-fancontrol*|\
               luci-app-mlo*|luci-i18n-mlo-zh-cn*)
                 cp -v "$f" apps/
@@ -196,8 +188,8 @@ jobs:
             #apps/luci-i18n-airoha-flowsense-zh-cn*.apk
             #apps/luci-app-airoha-npu*.apk
             #apps/luci-i18n-airoha-npu-zh-cn*.apk
-            apps/luci-app-w1700k-fancontrol*.apk
-            apps/luci-i18n-w1700k-fancontrol*.apk
+            #apps/luci-app-w1700k-fancontrol*.apk
+            #apps/luci-i18n-w1700k-fancontrol*.apk
             apps/luci-app-airoha-fancontrol*.apk
             apps/luci-i18n-airoha-fancontrol*.apk
             #apps/luci-app-airoha-2*.apk
