@@ -79,10 +79,10 @@ jobs:
 
           # 克隆 arthur97172 仓库
           echo ">>> 克隆 arthur97172/luci-app-airoha-fancontrol (main)..."
-          git clone --depth=1 -b main https://github.com/Arthur97172/luci-app-airoha-fancontrol.git /tmp/arthur/luci-app-airoha-fancontrol
+          git clone --depth=1 -b main https://github.com/Arthur97172/luci-app-airoha-fancontrol.git /tmp/arthur97172
           #for pkg in luci-app-airoha-flowsense luci-app-airoha-npu luci-app-airoha-fancontrol; do
           for pkg in luci-app-airoha-fancontrol; do
-            copy_plugin "/tmp/arthur/luci-app-airoha-fancontrol" "$pkg"
+            copy_plugin "/tmp/arthur97172" "$pkg"
           done
           
           # 克隆 naoki66 仓库
