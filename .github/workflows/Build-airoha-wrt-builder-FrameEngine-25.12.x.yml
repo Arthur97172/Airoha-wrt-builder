@@ -46,8 +46,8 @@ on:
         default: "no"
         type: choice
         options:
-          - yes
-          - no
+          - 'yes'
+          - 'no'
 
 env:
   FINAL_LUCI_VER: ${{ inputs.luci_version }}
