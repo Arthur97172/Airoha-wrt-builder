@@ -61,16 +61,32 @@ jobs:
             local pkg="$2"
             local found_path=""
 
-            for path in "$repo_dir/package/$pkg" "$repo_dir/apps/$pkg" "$repo_dir/$pkg" "$repo_dir/lede/$pkg"; do
-              if [ -d "$path" ]; then
-                found_path="$path"
-                break
-              fi
-            done
+            if [ -f "$repo_dir/Makefile" ]; then
+              found_path="$repo_dir"
+            else
+              for path in "$repo_dir/package/$pkg" "$repo_dir/apps/$pkg" "$repo_dir/$pkg" "$repo_dir/lede/$pkg"; do
+                if [ -d "$path" ]; then
+                  found_path="$path"
+                  break
+                fi
+              done
+            fi
 
             if [ -n "$found_path" ]; then
               echo "  ✓ 找到并复制 $pkg ($found_path)"
-              cp -a "$found_path" package/
+              rm -rf "package/$pkg"
+
+              if [ "$found_path" = "$repo_dir" ]; then
+                mkdir -p "package/$pkg"
+                cp -a "$repo_dir/." "package/$pkg/"
+              else
+                cp -a "$found_path" package/
+              fi
+
+              if [ ! -f "package/$pkg/Makefile" ]; then
+                echo "  ✗ 错误：$pkg 缺少 Makefile"
+                exit 1
+              fi
             else
               echo "  ✗ 错误：在仓库中未找到 $pkg"
               exit 1
@@ -79,12 +95,14 @@ jobs:
 
           # 克隆 arthur97172 仓库
           echo ">>> 克隆 arthur97172/luci-app-airoha-fancontrol (main)..."
-          git clone --depth=1 -b main https://github.com/Arthur97172/luci-app-airoha-fancontrol.git /tmp
+          rm -rf /tmp/arthur
+          git clone --depth=1 -b main https://github.com/Arthur97172/luci-app-airoha-fancontrol.git /tmp/arthur97172
+
           #for pkg in luci-app-airoha-flowsense luci-app-airoha-npu luci-app-airoha-fancontrol; do
           for pkg in luci-app-airoha-fancontrol; do
-            copy_plugin "/tmp" "$pkg"
+            copy_plugin "/tmp/arthur97172" "$pkg"
           done
-          
+
           # 克隆 naoki66 仓库
           #echo ">>> 克隆 naoki66/luci-app-airoha (master)..."
           #git clone --depth=1 -b master https://github.com/naoki66/luci-app-airoha.git /tmp/naoki
@@ -95,7 +113,9 @@ jobs:
 
           # 克隆 YYH2913 仓库
           echo ">>> 克隆 YYH2913/openwrt (xr1710g-6.18-integration)..."
+          rm -rf /tmp/yyh
           git clone --depth=1 -b xr1710g-6.18-integration https://github.com/YYH2913/openwrt.git /tmp/yyh
+
           for pkg in luci-app-mlo luci-app-w1700k-fancontrol; do
           #for pkg in luci-app-airoha-npu luci-app-mlo luci-app-w1700k-fancontrol; do
           #for pkg in luci-app-airoha-flowsense luci-app-airoha-npu luci-app-mlo luci-app-w1700k-fancontrol; do
