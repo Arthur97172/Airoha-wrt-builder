@@ -248,59 +248,6 @@ jobs:
               >> source/files/etc/apk/repositories.d/customfeeds.list
           fi
 
-      - name: 🎯 配置 AN7581 Target
-        run: |
-          set -e
-      
-          PROFILE="${{ inputs.profile }}"
-      
-          cat > an7581-frame-engine.config <<EOF
-          CONFIG_TARGET_airoha=y
-          CONFIG_TARGET_airoha_an7581=y
-          EOF
-      
-          case "$PROFILE" in
-            airoha_an7581-evb-emmc-eagle)
-              echo "CONFIG_TARGET_airoha_an7581_DEVICE_airoha_an7581-evb-emmc-eagle=y" >> an7581-frame-engine.config
-              ;;
-            airoha_an7581-evb-emmc-kite)
-              echo "CONFIG_TARGET_airoha_an7581_DEVICE_airoha_an7581-evb-emmc-kite=y" >> an7581-frame-engine.config
-              ;;
-            airoha_an7581-evb)
-              echo "CONFIG_TARGET_airoha_an7581_DEVICE_airoha_an7581-evb=y" >> an7581-frame-engine.config
-              ;;
-            gemtek_w1700k-ubi)
-              echo "CONFIG_TARGET_airoha_an7581_DEVICE_gemtek_w1700k-ubi=y" >> an7581-frame-engine.config
-              ;;
-            nokia_valyrian)
-              echo "CONFIG_TARGET_airoha_an7581_DEVICE_nokia_valyrian=y" >> an7581-frame-engine.config
-              ;;
-            nokia_xg-040g-md)
-              echo "CONFIG_TARGET_airoha_an7581_DEVICE_nokia_xg-040g-md=y" >> an7581-frame-engine.config
-              ;;
-            nokia_xg-040g-md-ubi)
-              echo "CONFIG_TARGET_airoha_an7581_DEVICE_nokia_xg-040g-md-ubi=y" >> an7581-frame-engine.config
-              ;;
-            *)
-              echo "❌ Unknown profile: $PROFILE"
-              exit 1
-              ;;
-          esac
-      
-          cat an7581-frame-engine.config
-      
-          cat an7581-frame-engine.config >> .config
-      
-          make defconfig
-      
-          echo
-          echo "========================================"
-          echo "Target verification"
-          echo "========================================"
-      
-          grep -E '^CONFIG_TARGET_airoha|^CONFIG_TARGET.*DEVICE' .config \
-            | grep -E 'airoha|an7581|gemtek|nokia' || true
-
       - name: 🧩 自动启用 Kernel CONFIG_DEVMEM
         working-directory: ./source
         shell: bash
@@ -477,20 +424,6 @@ jobs:
           grep -E \
             '^CONFIG_PACKAGE_luci-app-airoha-npu=' \
             .config || true
-
-      - name: 🐳 配置 Docker
-        if: inputs.include_docker == 'yes'
-        working-directory: ./source
-        run: |
-          set -e
-
-          ./scripts/config --enable CONFIG_PACKAGE_dockerd
-          ./scripts/config --enable CONFIG_PACKAGE_docker
-          ./scripts/config --enable CONFIG_PACKAGE_luci-app-dockerman
-
-          make defconfig
-
-          echo "Docker enabled."
 
       - name: 🔍 最终配置检查
         working-directory: ./source
