@@ -1,4 +1,3 @@
-```yaml
 name: 📦 Build airoha-wrt-25.12.x Frame Engine
 
 on:
@@ -731,4 +730,3 @@ jobs:
             source/bin/targets/airoha/an7581/*.bin
 
           token: ${{ secrets.GITHUB_TOKEN }}
-```
