@@ -97,7 +97,6 @@ jobs:
           echo ">>> 克隆 arthur97172/luci-app-airoha-fancontrol (main)..."
           rm -rf /tmp/arthur
           git clone --depth=1 -b main https://github.com/Arthur97172/luci-app-airoha-fancontrol.git /tmp/arthur97172
-
           #for pkg in luci-app-airoha-flowsense luci-app-airoha-npu luci-app-airoha-fancontrol; do
           for pkg in luci-app-airoha-fancontrol; do
             copy_plugin "/tmp/arthur97172" "$pkg"
@@ -134,9 +133,9 @@ jobs:
           echo "CONFIG_PACKAGE_luci-app-airoha-fancontrol=m" >> .config
           echo "CONFIG_PACKAGE_luci-app-mlo=m" >> .config
           echo "CONFIG_PACKAGE_luci-app-w1700k-fancontrol=m" >> .config
-          echo "CONFIG_PACKAGE_luci-app-cpufreq=m" >> .config
-          echo "CONFIG_PACKAGE_libubox=m" >> .config
-          echo "luci-app-airoha=m" >> .config
+          #echo "CONFIG_PACKAGE_luci-app-cpufreq=m" >> .config
+          #echo "CONFIG_PACKAGE_libubox=m" >> .config
+          #echo "luci-app-airoha=m" >> .config
 
           make defconfig
           echo "配置完成"
@@ -146,7 +145,7 @@ jobs:
           set -e
           cd sdk
 
-          PLUGINS="luci-app-airoha luci-app-airoha-fancontrol luci-app-mlo luci-app-w1700k-fancontrol"
+          PLUGINS="luci-app-airoha-fancontrol luci-app-mlo luci-app-w1700k-fancontrol"
 
           for pkg in $PLUGINS; do
             echo ""
@@ -167,12 +166,12 @@ jobs:
           rm -f apps/luci-app-w1700k-fancontrol*.apk apps/luci-i18n-w1700k-fancontrol*.apk
           rm -f apps/luci-app-airoha-fancontrol*.apk apps/luci-i18n-airoha-fancontrol*.apk
           rm -f apps/luci-app-mlo*.apk apps/luci-i18n-mlo-zh-cn*.apk
-          rm -f apps/luci-app-airoha-2*.apk apps/luci-i18n-airoha-zh-cn*.apk
+          #rm -f apps/luci-app-airoha-2*.apk apps/luci-i18n-airoha-zh-cn*.apk
 
           # 提取编译完成的目标包
           find sdk/bin -name "*.apk" | while read -r f; do
             case "$(basename "$f")" in
-              luci-app-airoha-2*|luci-i18n-airoha-zh-cn*|\
+              #luci-app-airoha-2*|luci-i18n-airoha-zh-cn*|\
               luci-app-w1700k-fancontrol*|luci-i18n-w1700k-fancontrol*|\
               luci-app-airoha-fancontrol*|luci-i18n-airoha-fancontrol*|\
               luci-app-mlo*|luci-i18n-mlo-zh-cn*)
@@ -201,8 +200,8 @@ jobs:
             apps/luci-i18n-w1700k-fancontrol*.apk
             apps/luci-app-airoha-fancontrol*.apk
             apps/luci-i18n-airoha-fancontrol*.apk
-            apps/luci-app-airoha-2*.apk
-            apps/luci-i18n-airoha*.apk
+            #apps/luci-app-airoha-2*.apk
+            #apps/luci-i18n-airoha*.apk
             apps/luci-app-mlo*.apk
             apps/luci-i18n-mlo-zh-cn*.apk
           if-no-files-found: error
