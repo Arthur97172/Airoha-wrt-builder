@@ -98,7 +98,7 @@ jobs:
           rm -rf /tmp/arthur
           git clone --depth=1 -b main https://github.com/Arthur97172/luci-app-airoha-apps.git /tmp/arthur97172
           #for pkg in luci-app-airoha-flowsense luci-app-airoha-npu luci-app-airoha-fancontrol; do
-          for pkg in luci-app-wifimanager luci-app-mlo; do
+          for pkg in luci-app-mlo; do
             copy_plugin "/tmp/arthur97172" "$pkg"
           done
 
@@ -111,7 +111,7 @@ jobs:
           set -e
           cd sdk
           
-          echo "CONFIG_PACKAGE_luci-app-wifimanager=m" >> .config
+          #echo "CONFIG_PACKAGE_luci-app-wifimanager=m" >> .config
           echo "CONFIG_PACKAGE_luci-app-mlo=m" >> .config
 
           make defconfig
@@ -138,13 +138,13 @@ jobs:
           set -e
           mkdir -p apps
           # 复制前清理 apps 目录下旧的相应 apk，确保保持最新
-          rm -f apps/luci-app-wifimanager*.apk apps/luci-i18n-wifimanager*.apk 
+          #rm -f apps/luci-app-wifimanager*.apk apps/luci-i18n-wifimanager*.apk 
           rm -f apps/luci-app-mlo*.apk apps/luci-i18n-mlo-zh-cn*.apk
 
           # 提取编译完成的目标包
           find sdk/bin -name "*.apk" | while read -r f; do
             case "$(basename "$f")" in
-              luci-app-wifimanager*|luci-i18n-wifimanager*|\
+              #luci-app-wifimanager*|luci-i18n-wifimanager*|\
               luci-app-mlo*|luci-i18n-mlo-zh-cn*)
                 cp -v "$f" apps/
                 ;;
@@ -163,8 +163,8 @@ jobs:
         with:
           name: luci-apps-immortalwrt-an7581
           path: |
-            apps/luci-app-wifimanager*.apk
-            apps/luci-i18n-wifimanager-zh-cn*.apk
+            #apps/luci-app-wifimanager*.apk
+            #apps/luci-i18n-wifimanager-zh-cn*.apk
             apps/luci-app-mlo*.apk
             apps/luci-i18n-mlo-zh-cn*.apk
           if-no-files-found: error
