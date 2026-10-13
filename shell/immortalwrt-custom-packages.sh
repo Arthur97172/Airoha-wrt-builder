@@ -38,6 +38,9 @@ CUSTOM_PACKAGES="$CUSTOM_PACKAGES bandix-plus luci-app-bandix-plus luci-i18n-ban
 # daede代理面板 (daede)
 #CUSTOM_PACKAGES="$CUSTOM_PACKAGES dae daed luci-app-daede"
 
+#LED指示灯控制 (ledcontrol)
+#CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-ledcontrol luci-i18n-ledcontrol-zh-cn"
+
 # lucky内网穿透 (lucky)
 #CUSTOM_PACKAGES="$CUSTOM_PACKAGES lucky luci-app-lucky luci-i18n-lucky-zh-cn"
 
