@@ -32,6 +32,9 @@ CUSTOM_PACKAGES="$CUSTOM_PACKAGES ddns-scripts-cloudflare luci-app-ddns luci-i18
 # Easymesh无线组网(easymesh)
 CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-easymesh luci-i18n-easymesh-zh-cn"
 
+#LED指示灯控制 (ledcontrol)
+CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-ledcontrol luci-i18n-ledcontrol-zh-cn"
+
 # Lucky内网穿透 (lucky)
 #CUSTOM_PACKAGES="$CUSTOM_PACKAGES lucky luci-app-lucky luci-i18n-lucky-zh-cn"
 
