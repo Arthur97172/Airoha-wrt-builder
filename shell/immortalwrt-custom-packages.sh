@@ -60,7 +60,7 @@ CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-online-upgrade luci-i18n-online-upgra
 CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-openclash"
 
 # oxidns DNS转发器 (oxidns)
-#CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-oxidns luci-i18n-oxidns-zh-cn"
+CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-oxidns luci-i18n-oxidns-zh-cn"
 
 # partexp分区扩容 (partexp)
 #CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-partexp luci-i18n-partexp-zh-cn"
