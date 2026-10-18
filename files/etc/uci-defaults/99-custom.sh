@@ -11,15 +11,34 @@ echo "========================================" >> "$LOGFILE"
 # 基础设置
 # =========================================================
 
-wan_zone=$(uci show firewall 2>/dev/null |
-    awk -F '[.=]' '/^firewall\.[^.]+\.name=.wan.$/ {print $2; exit}')
+wan_zone=$(uci -q show firewall 2>/dev/null |
+    awk -F '[.=]' '$1 ~ /^firewall\.[^.]+$/ &&
+        $2 == "name" && $3 == "\047wan\047" {
+            sub(/^firewall\./, "", $1)
+            print $1
+            exit
+        }')
 
 if [ -n "$wan_zone" ]; then
     uci -q set "firewall.$wan_zone.input=ACCEPT"
     echo "Firewall WAN zone: $wan_zone -> input ACCEPT" >> "$LOGFILE"
 else
-    uci -q set firewall.@zone[1].input='ACCEPT'
-    echo "WARNING: WAN zone not found, fallback to firewall.@zone[1]" >> "$LOGFILE"
+    echo "WARNING: WAN zone not found, trying fallback." >> "$LOGFILE"
+
+    fallback_zone=$(uci -q show firewall 2>/dev/null |
+        awk -F '[.=]' '$1 ~ /^firewall\.@zone\[[0-9]+\]$/ &&
+            $2 == "name" && $3 == "\047wan\047" {
+                print $1
+                exit
+            }')
+
+    if [ -n "$fallback_zone" ]; then
+        uci -q set "$fallback_zone.input=ACCEPT"
+        echo "Fallback WAN zone: $fallback_zone -> input ACCEPT" >> "$LOGFILE"
+    else
+        uci -q set firewall.@zone[1].input='ACCEPT'
+        echo "WARNING: WAN zone unresolved, using legacy fallback firewall.@zone[1]" >> "$LOGFILE"
+    fi
 fi
 
 if ! uci show dhcp 2>/dev/null |
@@ -120,6 +139,12 @@ elif [ "$count" -eq 1 ]; then
     uci -q delete network.lan.netmask
     uci -q delete network.lan.gateway
     uci -q delete network.lan.dns
+    
+    # 关闭 LAN DHCP 服务器（单网口旁路由模式）
+    uci -q set dhcp.lan=dhcp
+    uci -q set dhcp.lan.interface='lan'
+    uci -q set dhcp.lan.ignore='1'
+    echo "LAN DHCP server disabled (Single port/旁路由 mode)." >> "$LOGFILE"
 else
     echo "Multiple Ethernet user ports detected." >> "$LOGFILE"
     wan_ifname=""
@@ -188,11 +213,21 @@ else
         fi
     fi
 
-    # LAN 静态 IP (恢复直接写入占位符)
+    # LAN 静态 IP
     uci -q set network.lan.proto='static'
     uci -q set network.lan.ipaddr='__IPADDR__'
     uci -q set network.lan.netmask='255.255.255.0'
     echo "LAN IP set to: __IPADDR__/24" >> "$LOGFILE"
+
+    # 启用 LAN DHCP 服务器
+    uci -q set dhcp.lan=dhcp
+    uci -q set dhcp.lan.interface='lan'
+    uci -q set dhcp.lan.ignore='0'
+    uci -q set dhcp.lan.start='100'
+    uci -q set dhcp.lan.limit='150'
+    uci -q set dhcp.lan.leasetime='12h'
+
+    echo "LAN DHCP server enabled: start=100, limit=150, leasetime=12h" >> "$LOGFILE"
 fi
 
 # =========================================================
