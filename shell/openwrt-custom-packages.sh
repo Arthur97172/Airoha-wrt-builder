@@ -20,6 +20,9 @@ CUSTOM_PACKAGES="$CUSTOM_PACKAGES bandix-plus luci-app-bandix-plus luci-i18n-ban
 # Bandix网络流量监控 (bandix)
 #CUSTOM_PACKAGES="$CUSTOM_PACKAGES bandix luci-app-bandix luci-i18n-bandix-zh-cn"
 
+#CPU状态 (cpustatus)
+CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-cpu-status"
+
 # Clashoo代理面板 (clashoo)
 #CUSTOM_PACKAGES="$CUSTOM_PACKAGES clashoo luci-app-clashoo luci-i18n-clashoo-zh-cn"
 
@@ -92,6 +95,9 @@ CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-substore luci-i18n-substore-zh-cn"
 
 # Watchdog看门狗 (watchdog)
 #CUSTOM_PACKAGES="$CUSTOM_PACKAGES watchdog luci-app-watchdog luci-i18n-watchdog-zh-cn"
+
+# WiFi管理 (Wifimanager)
+CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-wifimanager luci-i18n-wifimanager-zh-cn"
 
 # Wireguard VPN控制面板 (wireguard)
 CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-proto-wireguard qrencode"
