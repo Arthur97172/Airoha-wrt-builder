@@ -78,7 +78,6 @@ jobs:
           # 清理旧文件并放入新编译的二进制
           rm -f apps/devmem apps/devmem2
           cp devmem2 apps/devmem2
-          ln -s devmem2 apps/devmem
           
           echo ""
           echo "=== 最终已放置到 apps/ 的文件 ==="
@@ -90,7 +89,6 @@ jobs:
           name: devmem-an7581
           path: |
             apps/devmem2
-            apps/devmem
           if-no-files-found: error
           retention-days: 30
 
