@@ -116,6 +116,7 @@ jobs:
           curl -Lf -o imagebuilder.tar.zst "$URL"
           tar --use-compress-program=unzstd -xvf imagebuilder.tar.zst
           mv -- ${{ env.FINAL_WRT }}-imagebuilder-* imagebuilder
+          echo "✅ ImageBuilder 下载完成"
 
       - name: 🔄 复制${{ inputs.wrt_version }}必备文件
         run: |   
