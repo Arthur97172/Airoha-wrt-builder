@@ -62,7 +62,6 @@ if [ "$PROFILE" = "gemtek_w1700k-ubi" ]; then
     echo "🐳 Install gemtek_w1700k-ubi Luci"
     PACKAGES="$PACKAGES luci-app-wifimanager luci-i18n-wifimanager-zh-cn"
     PACKAGES="$PACKAGES luci-app-airoha-manager luci-i18n-airoha-manager-zh-cn"
-    PACKAGES="$PACKAGES devmem2"
 fi
 
 # ============================================
@@ -102,7 +101,37 @@ if [ "$THIRD_PARTY_OK" = "1" ]; then
             cp -f ../apps/*.apk apk-merged/ 2>/dev/null || true
         fi
     fi
-    
+
+    # 2.1 【新增】处理本地 apps 目录下的 devmem2 二进制及软链接注入（通过 files/ 目录固化）
+    if [ "$PROFILE" = "gemtek_w1700k-ubi" ]; then
+        echo "🛠️ 正在检查并注入 devmem 二进制及软链接..."
+        mkdir -p files/usr/bin
+        
+        DEVMEM_SRC=""
+        if [ -f "apps/devmem2" ]; then
+            DEVMEM_SRC="apps/devmem2"
+        elif [ -f "../apps/devmem2" ]; then
+            DEVMEM_SRC="../apps/devmem2"
+        elif [ -f "apps/devmem" ]; then
+            DEVMEM_SRC="apps/devmem"
+        elif [ -f "../apps/devmem" ]; then
+            DEVMEM_SRC="../apps/devmem"
+        fi
+
+        if [ -n "$DEVMEM_SRC" ]; then
+            cp -f "$DEVMEM_SRC" files/usr/bin/devmem2
+            chmod 755 files/usr/bin/devmem2
+            
+            # 创建同目录下的相对软链接
+            rm -f files/usr/bin/devmem
+            ln -s devmem2 files/usr/bin/devmem
+            echo "✅ 成功将 devmem2 与 devmem 软链接注入 files/usr/bin/"
+        else
+            echo "⚠️ 未在 apps/ 目录下找到 devmem2 二进制文件"
+        fi
+    fi
+
+    # 2.2 (融合代码）
     if [ -d apk-merged ] && [ -n "$(ls apk-merged/*.apk 2>/dev/null)" ]; then
         cp apk-merged/*.apk thirdparty/ 2>/dev/null
     else
