@@ -35,8 +35,14 @@ CUSTOM_PACKAGES="$CUSTOM_PACKAGES bandix-plus luci-app-bandix-plus luci-i18n-ban
 # clashoo代理面板 (clashoo)
 #CUSTOM_PACKAGES="$CUSTOM_PACKAGES clashoo luci-app-clashoo luci-i18n-clashoo-zh-cn"
 
+#CPU状态 (cpustatus)
+CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-cpu-status"
+
 # daede代理面板 (daede)
 #CUSTOM_PACKAGES="$CUSTOM_PACKAGES dae daed luci-app-daede"
+
+# easymesh无线组网(Easymesh)
+#CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-easymesh luci-i18n-easymesh-zh-cn"
 
 #LED指示灯控制 (ledcontrol)
 CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-ledcontrol luci-i18n-ledcontrol-zh-cn"
@@ -84,11 +90,11 @@ CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-substore luci-i18n-substore-zh-cn"
 # turboacc网络加速(turboacc)
 CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-turboacc luci-i18n-turboacc-zh-cn"
 
-# easymesh无线组网(Easymesh)
-#CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-easymesh luci-i18n-easymesh-zh-cn"
-
 # taskplan定时任务 (taskplan)
 #CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-taskplan luci-i18n-taskplan-zh-cn"
+
+# WiFi管理 (Wifimanager)
+CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-wifimanager luci-i18n-wifimanager-zh-cn"
 
 # Wireguard VPN控制面板 (wireguard)
 CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-proto-wireguard qrencode"
