@@ -1,8 +1,8 @@
 name: 📦 Build devmem2 for AN7581
 
 on:
-  schedule:
-    - cron: '0 22 */7 * *'  # 每7日凌晨6点执行
+  #schedule:
+    #- cron: '0 22 */7 * *'  # 每7日凌晨6点执行
   workflow_dispatch:  # 允许手动触发
 
 jobs:
