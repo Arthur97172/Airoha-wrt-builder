@@ -54,11 +54,11 @@
 |:------------------------:|:----:|:------------------------:|:-----:|:------------------------:|:------:|
 | Amlogic          | ✅   | Argon        | ✅    | Bandix-plus    |  ✅     |
 | Clashoo              |  ✅   | Daede                    |  ✅     | Lucky                | ✅      |
-| MosDNS              |  ✅   | Netwizard                   |  ✅     | Nikki            | ✅       |
-| Openclash              |  ✅   | Partexp                    |  ✅     | Poweroffdevice           | ✅       |
+| MosDNS              |  ✅   | Smartnetpilot                   |  ✅     | Nikki            | ✅       |
+| Openclash              |  ✅   | Partexp                    |  ✅     | Poweroff           | ✅       |
 | Rtp2httpd              |  ✅   | Tailscale                    |  ✅      | Taskplan           | ✅        |
 | Passwall              |  ✅   | Run                   |  ✅      | Adguardhome           | ✅       |
-| Online-upgrade             |  ✅   |
+| Online-upgrade             |  ✅   | Substore                   |  ✅      | FCC                   |  ✅      |
 
 ✅ 支持 - ⏳ 计划中 - ⭕ 不支持
 
