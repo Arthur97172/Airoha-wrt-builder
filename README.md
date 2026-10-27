@@ -56,10 +56,10 @@
 | Clashoo              |  ✅   | Daede                    |  ✅     | Lucky                | ✅      |
 | MosDNS              |  ✅   | Smartnetpilot                   |  ✅     | Nikki            | ✅       |
 | Openclash              |  ✅   | Partexp                    |  ✅     | Poweroff           | ✅       |
-| Rtp2httpd              |  ✅   | Tailscale                    |  ✅      | Taskplan           | ✅        |
+| Rtp2httpd              |  ✅   | Tailscale                    |  ✅      | Tasks           | ✅        |
 | Passwall              |  ✅   | Run                   |  ✅      | Adguardhome           | ✅       |
 | Online-upgrade             |  ✅   | Substore                   |  ✅      | FCC                   |  ✅      |
-| Tasks                   |  ✅      |
+
 
 ✅ 支持 - ⏳ 计划中 - ⭕ 不支持
 
