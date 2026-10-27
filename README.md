@@ -59,6 +59,7 @@
 | Rtp2httpd              |  ✅   | Tailscale                    |  ✅      | Taskplan           | ✅        |
 | Passwall              |  ✅   | Run                   |  ✅      | Adguardhome           | ✅       |
 | Online-upgrade             |  ✅   | Substore                   |  ✅      | FCC                   |  ✅      |
+| Tasks                   |  ✅      |
 
 ✅ 支持 - ⏳ 计划中 - ⭕ 不支持
 
