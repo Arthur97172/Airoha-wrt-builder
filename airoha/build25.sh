@@ -35,12 +35,14 @@ PACKAGES="$PACKAGES kmod-nft-socket kmod-nft-tproxy"
 PACKAGES="$PACKAGES tmux"
 PACKAGES="$PACKAGES kmod-br-netfilter"
 PACKAGES="$PACKAGES uhttpd luci-app-uhttpd"
+PACKAGES="$PACKAGES openssh-client-utils"
 
 # [无线驱动]
 PACKAGES="$PACKAGES kmod-cfg80211 kmod-mac80211 kmod-mt76-connac kmod-mt76-core kmod-hwmon-nct7802 rtl826x-firmware"
 PACKAGES="$PACKAGES airoha-en7581-mt7996-npu-firmware"
 PACKAGES="$PACKAGES wireless-regdb"
 PACKAGES="$PACKAGES kmod-mt7996-firmware kmod-mt7996-firmware-common kmod-mt7996e"
+PACKAGES="$PACKAGES batctl-default kmod-batman-adv dawn luci-proto-batman-adv"
 
 #[其它驱动]
 PACKAGES="$PACKAGES kmod-phy-aquantia kmod-phy-realtek kmod-phylink kmod-sfp ethtool iperf3 kmod-thermal lm-sensors kmod-tcp-bbr"
@@ -55,7 +57,7 @@ PACKAGES="$PACKAGES luci-app-upnp luci-i18n-upnp-zh-cn"
 PACKAGES="$PACKAGES luci-app-wol luci-i18n-wol-zh-cn"
 PACKAGES="$PACKAGES luci-app-package-manager luci-i18n-package-manager-zh-cn"
 #PACKAGES="$PACKAGES luci-app-irqbalance luci-i18n-irqbalance-zh-cn"
-PACKAGES="$PACKAGES luci-app-wifihistory luci-i18n-wifihistory-zh-cn"
+#PACKAGES="$PACKAGES luci-app-wifihistory luci-i18n-wifihistory-zh-cn"
 
 # [gemtek_w1700k-ubi插件]
 if [ "$PROFILE" = "gemtek_w1700k-ubi" ]; then
