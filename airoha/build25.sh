@@ -50,6 +50,7 @@ PACKAGES="$PACKAGES kmod-phy-aquantia kmod-phy-realtek kmod-phylink kmod-sfp eth
 # [Web 界面]
 PACKAGES="$PACKAGES luci luci-base luci-i18n-base-zh-cn luci-mod-admin-full luci-i18n-firewall-zh-cn"
 PACKAGES="$PACKAGES luci-app-ttyd luci-i18n-ttyd-zh-cn"
+PACKAGES="$PACKAGES luci-app-uhttpd luci-i18n-uhttpd-zh-cn"
 
 # [功能插件]
 PACKAGES="$PACKAGES block-mount"
