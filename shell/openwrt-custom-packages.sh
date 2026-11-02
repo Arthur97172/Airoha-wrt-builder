@@ -32,9 +32,6 @@ CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-cpu-status"
 #动态DNS
 CUSTOM_PACKAGES="$CUSTOM_PACKAGES ddns-scripts-cloudflare luci-app-ddns luci-i18n-ddns-zh-cn"
 
-# easymesh无线组网(Easymesh)
-CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-easymesh luci-i18n-easymesh-zh-cn"
-
 # FCC智能体 (FCC)
 CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-fcc luci-i18n-fcc-zh-cn"
 
@@ -43,6 +40,9 @@ CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-ledcontrol luci-i18n-ledcontrol-zh-cn
 
 # lucky内网穿透 (lucky)
 #CUSTOM_PACKAGES="$CUSTOM_PACKAGES lucky luci-app-lucky luci-i18n-lucky-zh-cn"
+
+# meshassistant MESH助手(meshassistant)
+CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-meshassistant luci-i18n-meshassistant-zh-cn"
 
 # MosDNS转发器 (MosDNS)
 CUSTOM_PACKAGES="$CUSTOM_PACKAGES mosdns luci-app-mosdns luci-i18n-mosdns-zh-cn"
