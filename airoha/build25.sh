@@ -42,10 +42,9 @@ PACKAGES="$PACKAGES kmod-cfg80211 kmod-mac80211 kmod-mt76-connac kmod-mt76-core 
 PACKAGES="$PACKAGES airoha-en7581-mt7996-npu-firmware"
 PACKAGES="$PACKAGES wireless-regdb"
 PACKAGES="$PACKAGES kmod-mt7996-firmware kmod-mt7996-firmware-common kmod-mt7996e"
-PACKAGES="$PACKAGES batctl-default kmod-batman-adv dawn luci-proto-batman-adv"
 
-#无线漫游/AP 协同助手
-PACKAGES="$PACKAGES usteer luci-app-usteer luci-i18n-usteer-zh-cn"
+#无线mesh依赖
+PACKAGES="$PACKAGES batctl-default kmod-batman-adv dawn luci-proto-batman-adv socat iw"
 
 #[其它驱动]
 PACKAGES="$PACKAGES kmod-phy-aquantia kmod-phy-realtek kmod-phylink kmod-sfp ethtool iperf3 kmod-thermal lm-sensors kmod-tcp-bbr"
