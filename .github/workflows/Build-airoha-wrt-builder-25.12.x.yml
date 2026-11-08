@@ -114,7 +114,7 @@ jobs:
         run: |
           URL="https://downloads.${{ env.FINAL_WRT }}.org/${{ env.FINAL_LUCI_VER }}/targets/airoha/an7581/${{ env.FINAL_WRT }}-imagebuilder-airoha-an7581.Linux-x86_64.tar.zst"
           #curl -Lf -o imagebuilder.tar.zst "$URL"
-          curl -Lf -sS --retry 10 --retry-delay 15 --retry-connrefused -o imagebuilder.tar.zst "$URL"
+          curl -fsSL -sS --retry 10 --retry-delay 15 --retry-connrefused -o imagebuilder.tar.zst "$URL"
           tar --use-compress-program=unzstd -xvf imagebuilder.tar.zst
           mv -- ${{ env.FINAL_WRT }}-imagebuilder-* imagebuilder
           echo "✅ ImageBuilder 下载完成"
