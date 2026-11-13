@@ -91,7 +91,7 @@ CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-substore luci-i18n-substore-zh-cn"
 #CUSTOM_PACKAGES="$CUSTOM_PACKAGES tailscale luci-app-tailscale luci-i18n-tailscale-zh-cn"
 
 # turboacc网络加速(turboacc)
-#CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-turboacc luci-i18n-turboacc-zh-cn"
+CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-turboacc luci-i18n-turboacc-zh-cn"
 
 # tasks任务管理 (tasks)
 CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-tasks luci-i18n-tasks-zh-cn"
